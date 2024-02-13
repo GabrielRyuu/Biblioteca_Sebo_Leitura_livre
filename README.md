@@ -8,7 +8,7 @@
 
 <br>
 
-![Resultado final do projeto](https://ibb.co/ryQVsQB)
+![Resultado final do projeto](https://cdn.discordapp.com/attachments/873041648395894824/1207052136337252382/Screenshot_5.png?ex=65de3de7&is=65cbc8e7&hm=5db105f8b163eabddecb74af53ebc48f9435f879987cfbcbbcfd30b7b45ab965&)
 
 <br>
 
