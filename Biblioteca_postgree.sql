@@ -1,13 +1,11 @@
--- Database biblioteca
-
+-- Database: Biblioteca
 CREATE TABLE livros (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
     isbn VARCHAR(20),
     ano_publicacao INTEGER,
     editora VARCHAR(100)
 );
-
 
 
 CREATE TABLE emprestimos (
