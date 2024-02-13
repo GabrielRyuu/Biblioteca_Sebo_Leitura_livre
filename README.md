@@ -8,7 +8,7 @@
 
 <br>
 
-![Resultado final do projeto](https://cdn.discordapp.com/attachments/596677178343817236/1049175180578127903/final.png)
+![Resultado final do projeto](https://ibb.co/ryQVsQB)
 
 <br>
 
@@ -26,7 +26,8 @@ Esse projeto foi desenvolvido com as seguintes Linguagens:
 
   <a href="https://github.com/GabrielRyuu" target="_blank"><img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white"></a>
   <a href="https://github.com/GabrielRyuu" target="_blank"><img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white"></a>
-  <a href="https://github.com/GabrielRyuu" target="_blank"><img src="https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white"_blank"></a> 
+  <a href="https://github.com/GabrielRyuu" target="_blank"><img src="https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white%22_blank%22%3E"></a>
+ 
 
 ## 📚 Bibliotecas
 
