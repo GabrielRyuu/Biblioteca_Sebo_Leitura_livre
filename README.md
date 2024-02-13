@@ -16,7 +16,7 @@
 
 Desenvolvimento de um sistema de gerenciamento de biblioteca em Python, permitindo operações básicas como adição, remoção, edição, empréstimo e devolução de livros. O projeto inclui uma interface gráfica de usuário utilizando Tkinter e armazenamento de dados em dois bancos de dados diferentes: PostgreSQL e MySQL. 
  
-<a href="https://drive.google.com/file/d/1vTPbVhIGbE3b7sOLe5hRzvFsylipH6u4/view?usp=sharing" target="_blank"><img src="https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white" target="_blank"></a>
+<a href="https://drive.google.com/drive/folders/1F0SxnvS-rDk1yvdZxfCAr_AvZWgjuUvi?usp=sharing" target="_blank"><img src="https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white" target="_blank"></a>
 
 
 ## 🚀 Linguagens
