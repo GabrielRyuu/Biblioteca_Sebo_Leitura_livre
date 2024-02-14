@@ -17,3 +17,10 @@ CREATE TABLE emprestimos (
     status VARCHAR(20),
     FOREIGN KEY (livro_id) REFERENCES livros(id)
 );
+
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL
+);
