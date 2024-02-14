@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from tkinter import ttk
 import mysql.connector
@@ -7,7 +6,7 @@ style.theme_use('clam')
 from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from datetime import datetime
-
+import bcrypt
 
 mydb = mysql.connector.connect(
     host="127.0.0.1",
@@ -18,14 +17,132 @@ mydb = mysql.connector.connect(
 print("Conexão bem-sucedida ao banco de dados MySQL!")
 
 
+import mysql.connector
+from mysql.connector import Error
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox
+from datetime import datetime
+
+def connect_to_mysql():
+    try:
+        conn = mysql.connector.connect(
+            host="127.0.0.1",
+            user="root",
+            password="gerador8",
+            database="biblioteca"
+        )
+        if conn.is_connected():
+            print("Conexão bem-sucedida ao banco de dados MySQL!")
+            return conn
+    except Error as e:
+        print(f"Erro ao conectar ao MySQL: {e}")
+
+def register_user(conn, username, password):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)", (username, password))
+        conn.commit()
+        print("Usuário registrado com sucesso!")
+    except Error as e:
+        print(f"Erro ao registrar usuário: {e}")
+
+def verify_user(conn, username, password):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT password_hash FROM users WHERE username = %s", (username,))
+        password_hash = cursor.fetchone()
+        if password_hash:
+            if password == password_hash[0]:
+                print("Credenciais de usuário válidas. Login bem-sucedido!")
+                return True
+            else:
+                print("Nome de usuário ou senha inválidos.")
+                return False
+        else:
+            print("Usuário não encontrado.")
+            return False
+    except Error as e:
+        print(f"Erro ao verificar usuário: {e}")
+        return False
+
+def register_new_user():
+    def register():
+        username = username_var.get()
+        password = password_var.get()
+        confirm_password = confirm_password_var.get()
+
+        if not (username and password and confirm_password):
+            messagebox.showwarning("Aviso", "Por favor, preencha todos os campos.")
+            return
+
+        if password != confirm_password:
+            messagebox.showwarning("Aviso", "As senhas não coincidem.")
+            return
+
+        conn = connect_to_mysql()
+        register_user(conn, username, password)
+        conn.close()
+        register_window.destroy()
+
+    register_window = tk.Toplevel(root)
+    register_window.title("Registrar Novo Usuário")
+
+    username_var = tk.StringVar(register_window)
+    password_var = tk.StringVar(register_window)
+    confirm_password_var = tk.StringVar(register_window)
+
+    ttk.Label(register_window, text="Nome de Usuário:").grid(row=0, column=0, padx=5, pady=5)
+    ttk.Entry(register_window, textvariable=username_var).grid(row=0, column=1, padx=5, pady=5)
+    ttk.Label(register_window, text="Senha:").grid(row=1, column=0, padx=5, pady=5)
+    ttk.Entry(register_window, textvariable=password_var, show="*").grid(row=1, column=1, padx=5, pady=5)
+    ttk.Label(register_window, text="Confirmar Senha:").grid(row=2, column=0, padx=5, pady=5)
+    ttk.Entry(register_window, textvariable=confirm_password_var, show="*").grid(row=2, column=1, padx=5, pady=5)
+
+    ttk.Button(register_window, text="Registrar", command=register).grid(row=3, columnspan=2, pady=10)
+
+def login_user():
+    username = username_var.get()
+    password = password_var.get()
+
+    if not (username and password):
+        messagebox.showwarning("Aviso", "Por favor, preencha todos os campos.")
+        return
+
+    conn = connect_to_mysql()
+    if verify_user(conn, username, password):
+        conn.close()
+        root.destroy()
+
+root = tk.Tk()
+root.title("Autenticação de Usuário")
+
+username_var = tk.StringVar(root)
+password_var = tk.StringVar(root)
+
+ttk.Label(root, text="Nome de Usuário:").grid(row=0, column=0, padx=5, pady=5)
+ttk.Entry(root, textvariable=username_var).grid(row=0, column=1, padx=5, pady=5)
+ttk.Label(root, text="Senha:").grid(row=1, column=0, padx=5, pady=5)
+ttk.Entry(root, textvariable=password_var, show="*").grid(row=1, column=1, padx=5, pady=5)
+
+ttk.Button(root, text="Login", command=login_user).grid(row=2, columnspan=2, pady=10)
+ttk.Button(root, text="Registrar Novo Usuário", command=register_new_user).grid(row=3, columnspan=2, pady=10)
+
+root.mainloop()
+
+
+
+
+
+
+
+
 mycursor = mydb.cursor()
 
 
 root = tk.Tk()
 root.title("Biblioteca Gabriel")
 
-
-     
 
 tree = ttk.Treeview(root, columns=("ID", "Título", "Status", "Ano de Publicação", "Editora"), show="headings")
 tree.heading("ID", text="ID")
@@ -34,6 +151,7 @@ tree.heading("Status", text="Status")
 tree.heading("Ano de Publicação", text="Ano de Publicação")
 tree.heading("Editora", text="Editora")
 tree.pack(padx=10, pady=10)
+
 
 
 
@@ -314,6 +432,9 @@ btn_emprestar_livro.pack(side=tk.LEFT, padx=5, pady=10)
 
 btn_emprestimos_pendentes = ttk.Button(root, text="Empréstimos Pendentes", command=exibir_emprestimos_pendentes)
 btn_emprestimos_pendentes.pack(side=tk.LEFT, padx=5, pady=10)
+
+
+
 
 
 root.mainloop()
