@@ -1,30 +1,157 @@
+from multiprocessing import connection
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 from psycopg2 import connect
 from psycopg2 import connect, Error
 import psycopg2
+import bcrypt
+
+# Função para conectar ao banco de dados PostgreSQL
+def connect_to_postgresql():
+    try:
+        conn = psycopg2.connect(
+            dbname="Biblioteca",
+            user="postgres",
+            password="gerador8",
+            host="localhost"
+        )
+        print("Conexão bem-sucedida ao banco de dados PostgreSQL!")
+        return conn
+    except psycopg2.Error as e:
+        print(f"Erro ao conectar ao PostgreSQL: {e}")
+
+# Função para registrar um novo usuário no banco de dados
+def register_user(conn, username, password):
+    try:
+        cursor = conn.cursor()
+        # Hash da senha antes de armazenar no banco de dados
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        cursor.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)", (username, password_hash))
+        conn.commit()
+        print("Usuário registrado com sucesso!")
+    except psycopg2.Error as e:
+        print(f"Erro ao registrar usuário: {e}")
+
+# Função para verificar as credenciais de um usuário no banco de dados
+def verify_user(conn, username, password):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT password_hash FROM users WHERE username = %s", (username,))
+        password_hash = cursor.fetchone()
+        if password_hash:
+            if bcrypt.checkpw(password.encode('utf-8'), password_hash[0].encode('utf-8')):
+                print("Credenciais de usuário válidas. Login bem-sucedido!")
+                return True
+            else:
+                print("Nome de usuário ou senha inválidos.")
+                return False
+        else:
+            print("Usuário não encontrado.")
+            return False
+    except (psycopg2.Error, TypeError) as e:
+        print(f"Erro ao verificar usuário: {e}")
+        return False
+
+# Função para lidar com o registro de um novo usuário
+def register_new_user():
+    def register():
+        username = username_var.get()
+        password = password_var.get()
+        confirm_password = confirm_password_var.get()
+
+        if not (username and password and confirm_password):
+            messagebox.showwarning("Aviso", "Por favor, preencha todos os campos.")
+            return
+
+        if password != confirm_password:
+            messagebox.showwarning("Aviso", "As senhas não coincidem.")
+            return
+
+        # Conectar ao banco de dados
+        conn = connect_to_postgresql()
+
+        # Registrar o novo usuário
+        register_user(conn, username, password)
+
+        # Fechar a conexão com o banco de dados
+        conn.close()
+
+        # Fechar a janela de registro
+        register_window.destroy()
+
+    register_window = tk.Toplevel(root)
+    register_window.title("Registrar Novo Usuário")
+
+    username_var = tk.StringVar(register_window)
+    password_var = tk.StringVar(register_window)
+    confirm_password_var = tk.StringVar(register_window)
+
+    ttk.Label(register_window, text="Nome de Usuário:").grid(row=0, column=0, padx=5, pady=5)
+    ttk.Entry(register_window, textvariable=username_var).grid(row=0, column=1, padx=5, pady=5)
+    ttk.Label(register_window, text="Senha:").grid(row=1, column=0, padx=5, pady=5)
+    ttk.Entry(register_window, textvariable=password_var, show="*").grid(row=1, column=1, padx=5, pady=5)
+    ttk.Label(register_window, text="Confirmar Senha:").grid(row=2, column=0, padx=5, pady=5)
+    ttk.Entry(register_window, textvariable=confirm_password_var, show="*").grid(row=2, column=1, padx=5, pady=5)
+
+    ttk.Button(register_window, text="Registrar", command=register).grid(row=3, columnspan=2, pady=10)
 
 
+# Função para verificar as credenciais de um usuário no banco de dados
+def verify_user(conn, username, password):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT password_hash FROM users WHERE username = %s", (username,))
+        password_hash = cursor.fetchone()
+        if password_hash:
+            if bcrypt.checkpw(password.encode('utf-8'), password_hash[0].encode('utf-8')):
+                print("Credenciais de usuário válidas. Login bem-sucedido!")
+                return True
+            else:
+                print("Nome de usuário ou senha inválidos.")
+                return False
+        else:
+            print("Usuário não encontrado.")
+            return False
+    except (psycopg2.Error, TypeError) as e:
+        print(f"Erro ao verificar usuário: {e}")
+        return False
 
-try:
-    conn = psycopg2.connect(
-        dbname="Biblioteca",
-        user="postgre",
-        password="gerador8",
-        host="localhost"
-    )
-    print("Conexão bem-sucedida ao banco de dados PostgreSQL!")
+# Função para lidar com o login de usuário
+def login_user():
+    username = username_var.get()
+    password = password_var.get()
 
+    if not (username and password):
+        messagebox.showwarning("Aviso", "Por favor, preencha todos os campos.")
+        return
+
+    # Conectar ao banco de dados
+    conn = connect_to_postgresql()
+
+    # Verificar as credenciais do usuário
+    if verify_user(conn, username, password):
+        # Fechar a conexão com o banco de dados
+        conn.close()
+        root.destroy()
+
+# Criar a janela de login
+root = tk.Tk()
+root.title("Autenticação de Usuário")
+
+username_var = tk.StringVar(root)
+password_var = tk.StringVar(root)
+
+ttk.Label(root, text="Nome de Usuário:").grid(row=0, column=0, padx=5, pady=5)
+ttk.Entry(root, textvariable=username_var).grid(row=0, column=1, padx=5, pady=5)
+ttk.Label(root, text="Senha:").grid(row=1, column=0, padx=5, pady=5)
+ttk.Entry(root, textvariable=password_var, show="*").grid(row=1, column=1, padx=5, pady=5)
+
+ttk.Button(root, text="Login", command=login_user).grid(row=2, columnspan=2, pady=10)
+ttk.Button(root, text="Registrar Novo Usuário", command=register_new_user).grid(row=3, columnspan=2, pady=10)
+
+root.mainloop()
     
-    postgres_cursor = conn.cursor()
-
-    
-
-except psycopg2.Error as e:
-    print(f"Erro ao conectar ao PostgreSQL: {e}")
-
-
 
 
 def exibir_detalhes():
