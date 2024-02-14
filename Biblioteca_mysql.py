@@ -7,6 +7,7 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from datetime import datetime
 import bcrypt
+from mysql.connector import Error
 
 mydb = mysql.connector.connect(
     host="127.0.0.1",
@@ -17,12 +18,7 @@ mydb = mysql.connector.connect(
 print("Conexão bem-sucedida ao banco de dados MySQL!")
 
 
-import mysql.connector
-from mysql.connector import Error
-import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
-from datetime import datetime
+
 
 def connect_to_mysql():
     try:
