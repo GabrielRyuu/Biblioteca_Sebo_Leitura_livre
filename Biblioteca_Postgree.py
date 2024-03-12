@@ -6,6 +6,12 @@ from psycopg2 import connect
 from psycopg2 import connect, Error
 import psycopg2
 import bcrypt
+import sys
+
+def on_closing():
+    if messagebox.askokcancel("Fechar", "Tem certeza que deseja sair?"):
+        root.destroy()  
+        sys.exit(0)  
 
 # Função para conectar ao banco de dados PostgreSQL
 def connect_to_postgresql():
@@ -137,10 +143,11 @@ def login_user():
 
 # Criar a janela de login
 root = tk.Tk()
-root.title("Autenticação de Usuário")
 
+root.title("Autenticação de Usuário")
 username_var = tk.StringVar(root)
 password_var = tk.StringVar(root)
+root.protocol("WM_DELETE_WINDOW", on_closing)
 
 ttk.Label(root, text="Nome de Usuário:").grid(row=0, column=0, padx=5, pady=5)
 ttk.Entry(root, textvariable=username_var).grid(row=0, column=1, padx=5, pady=5)
