@@ -7,13 +7,18 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from datetime import datetime
 import bcrypt
+import sys
 from mysql.connector import Error
+def on_closing():
+    if messagebox.askokcancel("Fechar", "Tem certeza que deseja sair?"):
+        root.destroy()  
+        sys.exit(0)  
 
 mydb = mysql.connector.connect(
     host="127.0.0.1",
     user="root",
     password="gerador8",
-    database="biblioteca"
+    database="biblioteca_mysql"
 )
 print("Conexão bem-sucedida ao banco de dados MySQL!")
 
@@ -26,7 +31,7 @@ def connect_to_mysql():
             host="127.0.0.1",
             user="root",
             password="gerador8",
-            database="biblioteca"
+            database="biblioteca_mysql"
         )
         if conn.is_connected():
             print("Conexão bem-sucedida ao banco de dados MySQL!")
@@ -112,10 +117,9 @@ def login_user():
 
 root = tk.Tk()
 root.title("Autenticação de Usuário")
-
 username_var = tk.StringVar(root)
 password_var = tk.StringVar(root)
-
+root.protocol("WM_DELETE_WINDOW", on_closing)
 ttk.Label(root, text="Nome de Usuário:").grid(row=0, column=0, padx=5, pady=5)
 ttk.Entry(root, textvariable=username_var).grid(row=0, column=1, padx=5, pady=5)
 ttk.Label(root, text="Senha:").grid(row=1, column=0, padx=5, pady=5)
