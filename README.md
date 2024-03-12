@@ -42,6 +42,7 @@ Esse projeto foi desenvolvido com as seguintes Linguagens:
 - Pillow (fork do PIL): (https://pillow.readthedocs.io/en/stable/)
 - datetime: (https://docs.python.org/pt-br/3/library/datetime.html)
 - bcrypt (https://pypi.org/project/bcrypt/)
+- psycopg2 (https://pypi.org/project/psycopg2/)
 
 
 ## 🔗 Links
