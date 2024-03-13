@@ -1,18 +1,16 @@
 import tkinter as tk
-from tkinter import ttk
-import mysql.connector
-style = ttk.Style()
-style.theme_use('clam')
 from tkinter import ttk, messagebox
-from PIL import Image, ImageTk
+import mysql.connector
 from datetime import datetime
-import bcrypt
 import sys
 from mysql.connector import Error
+
+root = tk.Tk()
+
 def on_closing():
     if messagebox.askokcancel("Fechar", "Tem certeza que deseja sair?"):
         root.destroy()  
-        sys.exit(0)  
+        sys.exit(0)
 
 mydb = mysql.connector.connect(
     host="127.0.0.1",
@@ -21,9 +19,6 @@ mydb = mysql.connector.connect(
     database="biblioteca_mysql"
 )
 print("Conexão bem-sucedida ao banco de dados MySQL!")
-
-
-
 
 def connect_to_mysql():
     try:
@@ -115,8 +110,8 @@ def login_user():
         conn.close()
         root.destroy()
 
-root = tk.Tk()
 root.title("Autenticação de Usuário")
+
 username_var = tk.StringVar(root)
 password_var = tk.StringVar(root)
 root.protocol("WM_DELETE_WINDOW", on_closing)
@@ -130,19 +125,10 @@ ttk.Button(root, text="Registrar Novo Usuário", command=register_new_user).grid
 
 root.mainloop()
 
-
-
-
-
-
-
-
 mycursor = mydb.cursor()
-
 
 root = tk.Tk()
 root.title("Biblioteca Gabriel")
-
 
 tree = ttk.Treeview(root, columns=("ID", "Título", "Status", "Ano de Publicação", "Editora"), show="headings")
 tree.heading("ID", text="ID")
@@ -152,26 +138,23 @@ tree.heading("Ano de Publicação", text="Ano de Publicação")
 tree.heading("Editora", text="Editora")
 tree.pack(padx=10, pady=10)
 
-
-
-
 def exibir_detalhes():
     selected_item = tree.focus()
-    
+
     if not selected_item:
-        tk.messagebox.showwarning("Aviso", "Por favor, selecione um livro")
+        messagebox.showwarning("Aviso", "Por favor, selecione um livro")
         return
-    
+
     livro_id = int(tree.item(selected_item)['text'])
-    
+
     sql = "SELECT * FROM livros WHERE id = %s"
     mycursor.execute(sql, (livro_id,))
     livro = mycursor.fetchone()
-    
+
     if not livro:
-        tk.messagebox.showwarning("Aviso", "Livro selecionado inválido")
+        messagebox.showwarning("Aviso", "Livro selecionado inválido")
         return
-    
+
     detalhes_janela = tk.Toplevel(root)
     detalhes_janela.title("Detalhes do Livro")
 
@@ -183,27 +166,25 @@ def exibir_detalhes():
 
 def remover_livro():
     selected_item = tree.focus()
-    
+
     if not selected_item:
-        tk.messagebox.showwarning("Aviso", "Por favor, selecione um livro")
+        messagebox.showwarning("Aviso", "Por favor, selecione um livro")
         return
-    
+
     livro_id = int(tree.item(selected_item)['text'])
 
-  
     sql_check_emprestimos = "SELECT * FROM emprestimos WHERE livro_id = %s AND status = 'pendente'"
     mycursor.execute(sql_check_emprestimos, (livro_id,))
     emprestimos_pendentes = mycursor.fetchall()
 
     if emprestimos_pendentes:
-        tk.messagebox.showwarning("Aviso", "Este livro está emprestado e não pode ser removido.")
+        messagebox.showwarning("Aviso", "Este livro está emprestado e não pode ser removido.")
         return
 
-   
     sql_remove_livro = "DELETE FROM livros WHERE id = %s"
     mycursor.execute(sql_remove_livro, (livro_id,))
     mydb.commit()
-    
+
     tree.delete(selected_item)
 
 def adicionar_livro():
@@ -220,18 +201,18 @@ def adicionar_livro():
         isbn = isbn_var.get()
         ano = ano_var.get()
         editora = editora_var.get()
-        
+
         if not (titulo and isbn and ano and editora):
-            tk.messagebox.showwarning("Aviso", "Por favor, preencha todos os campos")
+            messagebox.showwarning("Aviso", "Por favor, preencha todos os campos")
             return
-        
+
         sql = "INSERT INTO livros (titulo, isbn, ano_publicacao, editora) VALUES (%s, %s, %s, %s)"
         val = (titulo, isbn, int(ano), editora)
         mycursor.execute(sql, val)
         mydb.commit()
-        
+
         tree.insert("", "end", text=str(mycursor.lastrowid), values=(mycursor.lastrowid, titulo, "Disponível", ano, editora))
-        
+
         adicionar_janela.destroy()
 
     ttk.Label(adicionar_janela, text="Título:").grid(row=0, column=0, padx=5, pady=5)
@@ -256,34 +237,28 @@ def editar_livro():
     livro_ano = tree.item(selected_item)['values'][3]
     livro_editora = tree.item(selected_item)['values'][4]
 
-    
     editar_janela = tk.Toplevel(root)
     editar_janela.title("Editar Livro")
 
-    
     novo_titulo_var = tk.StringVar(editar_janela, value=livro_titulo)
     novo_ano_var = tk.StringVar(editar_janela, value=livro_ano)
     nova_editora_var = tk.StringVar(editar_janela, value=livro_editora)
 
-    
     def aplicar():
         novo_titulo = novo_titulo_var.get()
         novo_ano = novo_ano_var.get()
         nova_editora = nova_editora_var.get()
 
-        
         sql = "UPDATE livros SET titulo = %s, ano_publicacao = %s, editora = %s WHERE id = %s"
         val = (novo_titulo, novo_ano, nova_editora, livro_id)
         mycursor.execute(sql, val)
         mydb.commit()
 
-        
         tree.item(selected_item, values=(livro_id, novo_titulo, "Disponível", novo_ano, nova_editora))
 
         messagebox.showinfo("Sucesso", "Livro editado com sucesso.")
         editar_janela.destroy()
 
-    # Elementos da janela de edição
     ttk.Label(editar_janela, text="Novo Título:").grid(row=0, column=0, padx=5, pady=5)
     ttk.Entry(editar_janela, textvariable=novo_titulo_var).grid(row=0, column=1, padx=5, pady=5)
     ttk.Label(editar_janela, text="Novo Ano de Publicação:").grid(row=1, column=0, padx=5, pady=5)
@@ -292,7 +267,7 @@ def editar_livro():
     ttk.Entry(editar_janela, textvariable=nova_editora_var).grid(row=2, column=1, padx=5, pady=5)
 
     ttk.Button(editar_janela, text="Aplicar", command=aplicar).grid(row=3, columnspan=2, pady=10)
-
+    
 def emprestar_livro():
     selected_item = tree.focus()
     if not selected_item:
@@ -323,7 +298,7 @@ def emprestar_livro():
     ttk.Label(emprestar_janela, text="Data de Devolução:").grid(row=2, column=0, padx=5, pady=5)
     data_devolucao_entry = ttk.Entry(emprestar_janela)
     data_devolucao_entry.grid(row=2, column=1, padx=5, pady=5)
-
+    
     ttk.Label(emprestar_janela, text="Pessoa que está emprestando:").grid(row=3, column=0, padx=5, pady=5)
     pessoa_entry = ttk.Entry(emprestar_janela)
     pessoa_entry.grid(row=3, column=1, padx=5, pady=5)
@@ -352,14 +327,11 @@ def emprestar_livro():
             if tree.item(item)['text'] == str(livro_id):
                 tree.item(item, values=(tree.item(item)['values'][0], livro_titulo, "Emprestado", tree.item(item)['values'][3], tree.item(item)['values'][4]))
 
-        
         sql_update_status = "UPDATE livros SET status = 'Emprestado' WHERE id = %s"
         mycursor.execute(sql_update_status, (livro_id,))
         mydb.commit()
 
     ttk.Button(emprestar_janela, text="Realizar Empréstimo", command=realizar_emprestimo).grid(row=4, columnspan=2, pady=10)
-
-
 
 def devolver_livro():
     selected_item = tree.focus()
@@ -369,28 +341,23 @@ def devolver_livro():
 
     livro_id = int(tree.item(selected_item)['text'])
     livro_titulo = tree.item(selected_item)['values'][1]
-
     
     sql_update_status = "UPDATE livros SET status = 'Disponível' WHERE id = %s"
     mycursor.execute(sql_update_status, (livro_id,))
     mydb.commit()
-    
+
     sql_remove_emprestimo = "DELETE FROM emprestimos WHERE livro_id = %s"
     mycursor.execute(sql_remove_emprestimo, (livro_id,))
     mydb.commit()
-    
+
     messagebox.showinfo("Sucesso", f"O livro '{livro_titulo}' foi devolvido com sucesso.")
     tree.item(selected_item, values=(tree.item(selected_item)['values'][0], livro_titulo, "Disponível", tree.item(selected_item)['values'][3], tree.item(selected_item)['values'][4]))
-
 
 btn_devolver_livro = ttk.Button(root, text="Devolver Livro", command=devolver_livro)
 btn_devolver_livro.pack(side=tk.LEFT, padx=5, pady=10)  
 
-
-
-
 def exibir_emprestimos_pendentes():
-    pendentes_janela = tk.Toplevel(root)
+    pendentes_janela = tk.Toplevel
     pendentes_janela.title("Empréstimos Pendentes")
 
     sql = "SELECT * FROM emprestimos WHERE status = 'pendente'"
