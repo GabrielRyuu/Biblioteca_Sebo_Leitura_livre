@@ -5,8 +5,6 @@ from datetime import datetime
 import sys
 from mysql.connector import Error
 
-root = tk.Tk()
-
 def on_closing():
     if messagebox.askokcancel("Fechar", "Tem certeza que deseja sair?"):
         root.destroy()  
@@ -88,12 +86,12 @@ def register_new_user():
     password_var = tk.StringVar(register_window)
     confirm_password_var = tk.StringVar(register_window)
 
-    ttk.Label(register_window, text="Nome de Usuário:").grid(row=0, column=0, padx=5, pady=5)
-    ttk.Entry(register_window, textvariable=username_var).grid(row=0, column=1, padx=5, pady=5)
-    ttk.Label(register_window, text="Senha:").grid(row=1, column=0, padx=5, pady=5)
-    ttk.Entry(register_window, textvariable=password_var, show="*").grid(row=1, column=1, padx=5, pady=5)
-    ttk.Label(register_window, text="Confirmar Senha:").grid(row=2, column=0, padx=5, pady=5)
-    ttk.Entry(register_window, textvariable=confirm_password_var, show="*").grid(row=2, column=1, padx=5, pady=5)
+    ttk.Label(register_window, text="Nome de Usuário:", font=("Helvetica", 12)).grid(row=0, column=0, padx=5, pady=5)
+    ttk.Entry(register_window, textvariable=username_var, font=("Helvetica", 12)).grid(row=0, column=1, padx=5, pady=5)
+    ttk.Label(register_window, text="Senha:", font=("Helvetica", 12)).grid(row=1, column=0, padx=5, pady=5)
+    ttk.Entry(register_window, textvariable=password_var, show="*", font=("Helvetica", 12)).grid(row=1, column=1, padx=5, pady=5)
+    ttk.Label(register_window, text="Confirmar Senha:", font=("Helvetica", 12)).grid(row=2, column=0, padx=5, pady=5)
+    ttk.Entry(register_window, textvariable=confirm_password_var, show="*", font=("Helvetica", 12)).grid(row=2, column=1, padx=5, pady=5)
 
     ttk.Button(register_window, text="Registrar", command=register).grid(row=3, columnspan=2, pady=10)
 
@@ -110,20 +108,24 @@ def login_user():
         conn.close()
         root.destroy()
 
+root = tk.Tk()
 root.title("Autenticação de Usuário")
 
 username_var = tk.StringVar(root)
 password_var = tk.StringVar(root)
 root.protocol("WM_DELETE_WINDOW", on_closing)
-ttk.Label(root, text="Nome de Usuário:").grid(row=0, column=0, padx=5, pady=5)
-ttk.Entry(root, textvariable=username_var).grid(row=0, column=1, padx=5, pady=5)
-ttk.Label(root, text="Senha:").grid(row=1, column=0, padx=5, pady=5)
-ttk.Entry(root, textvariable=password_var, show="*").grid(row=1, column=1, padx=5, pady=5)
+ttk.Label(root, text="Nome de Usuário:", font=("Helvetica", 12)).grid(row=0, column=0, padx=5, pady=5)
+ttk.Entry(root, textvariable=username_var, font=("Helvetica", 12)).grid(row=0, column=1, padx=5, pady=5)
+ttk.Label(root, text="Senha:", font=("Helvetica", 12)).grid(row=1, column=0, padx=5, pady=5)
+ttk.Entry(root, textvariable=password_var, show="*", font=("Helvetica", 12)).grid(row=1, column=1, padx=5, pady=5)
 
-ttk.Button(root, text="Login", command=login_user).grid(row=2, columnspan=2, pady=10)
-ttk.Button(root, text="Registrar Novo Usuário", command=register_new_user).grid(row=3, columnspan=2, pady=10)
+ttk.Button(root, text="Login", command=login_user, style="PrimaryButton.TButton").grid(row=2, columnspan=2, pady=10)
+ttk.Button(root, text="Registrar Novo Usuário", command=register_new_user, style="PrimaryButton.TButton").grid(row=3, columnspan=2, pady=10)
 
 root.mainloop()
+
+
+
 
 mycursor = mydb.cursor()
 
@@ -160,9 +162,14 @@ def exibir_detalhes():
 
     ttk.Label(detalhes_janela, text="ID: " + str(livro[0]), font=("Helvetica", 12)).pack(pady=5)
     ttk.Label(detalhes_janela, text="Título: " + livro[1], font=("Helvetica", 14, "bold")).pack(pady=5)
-    ttk.Label(detalhes_janela, text="ISBN: " + livro[2], font=("Helvetica", 12)).pack(pady=5)
+    
+   
+    isbn_text = "ISBN: " + (livro[2] if livro[2] is not None else "")
+    ttk.Label(detalhes_janela, text=isbn_text, font=("Helvetica", 12)).pack(pady=5)
+    
     ttk.Label(detalhes_janela, text="Ano de Publicação: " + str(livro[3]), font=("Helvetica", 12)).pack(pady=5)
     ttk.Label(detalhes_janela, text="Editora: " + livro[4], font=("Helvetica", 12)).pack(pady=5)
+
 
 def remover_livro():
     selected_item = tree.focus()
@@ -268,14 +275,14 @@ def editar_livro():
 
     ttk.Button(editar_janela, text="Aplicar", command=aplicar).grid(row=3, columnspan=2, pady=10)
     
-def emprestar_livro():
+def emprestar_livro(livro_titulo):
     selected_item = tree.focus()
     if not selected_item:
         messagebox.showwarning("Aviso", "Por favor, selecione um livro para emprestar.")
         return
 
     livro_id = int(tree.item(selected_item)['text'])
-    livro_titulo = tree.item(selected_item)['values'][1]
+    # Remove this line -> livro_titulo = tree.item(selected_item)['values'][1]
 
     sql = "SELECT * FROM emprestimos WHERE livro_id = %s AND status = 'pendente'"
     mycursor.execute(sql, (livro_id,))
@@ -298,7 +305,7 @@ def emprestar_livro():
     ttk.Label(emprestar_janela, text="Data de Devolução:").grid(row=2, column=0, padx=5, pady=5)
     data_devolucao_entry = ttk.Entry(emprestar_janela)
     data_devolucao_entry.grid(row=2, column=1, padx=5, pady=5)
-    
+
     ttk.Label(emprestar_janela, text="Pessoa que está emprestando:").grid(row=3, column=0, padx=5, pady=5)
     pessoa_entry = ttk.Entry(emprestar_janela)
     pessoa_entry.grid(row=3, column=1, padx=5, pady=5)
@@ -333,6 +340,8 @@ def emprestar_livro():
 
     ttk.Button(emprestar_janela, text="Realizar Empréstimo", command=realizar_emprestimo).grid(row=4, columnspan=2, pady=10)
 
+
+
 def devolver_livro():
     selected_item = tree.focus()
     if not selected_item:
@@ -341,7 +350,7 @@ def devolver_livro():
 
     livro_id = int(tree.item(selected_item)['text'])
     livro_titulo = tree.item(selected_item)['values'][1]
-    
+
     sql_update_status = "UPDATE livros SET status = 'Disponível' WHERE id = %s"
     mycursor.execute(sql_update_status, (livro_id,))
     mydb.commit()
@@ -357,29 +366,191 @@ btn_devolver_livro = ttk.Button(root, text="Devolver Livro", command=devolver_li
 btn_devolver_livro.pack(side=tk.LEFT, padx=5, pady=10)  
 
 def exibir_emprestimos_pendentes():
-    pendentes_janela = tk.Toplevel
+    pendentes_janela = tk.Toplevel(root)
     pendentes_janela.title("Empréstimos Pendentes")
 
     sql = "SELECT * FROM emprestimos WHERE status = 'pendente'"
     mycursor.execute(sql)
     emprestimos = mycursor.fetchall()
 
+
     ttk.Label(pendentes_janela, text="Empréstimos Pendentes:", font=("Helvetica", 14, "bold")).pack(pady=5)
+def connect_to_mysql():
+    try:
+        conn = mysql.connector.connect(
+            host="127.0.0.1",
+            user="root",
+            password="gerador8",
+            database="biblioteca_mysql"
+        )
+        if conn.is_connected():
+            print("Conexão bem-sucedida ao banco de dados MySQL!")
+            return conn
+    except Error as e:
+        print(f"Erro ao conectar ao MySQL: {e}")
+        
+def adicionar_estoque():
+    adicionar_estoque_janela = tk.Toplevel(root)
+    adicionar_estoque_janela.title("Adicionar Estoque")
 
-    for emprestimo in emprestimos:
-        livro_id = emprestimo[1]
-        sql = "SELECT titulo FROM livros WHERE id = %s"
-        mycursor.execute(sql, (livro_id,))
-        livro_titulo = mycursor.fetchone()[0]
+    # Carregar os livros disponíveis no combobox
+    livro_var = tk.StringVar(adicionar_estoque_janela)
+    livro_combobox = ttk.Combobox(adicionar_estoque_janela, textvariable=livro_var, state="readonly")
+    livro_combobox.grid(row=0, column=1, padx=5, pady=5)
 
-        ttk.Label(pendentes_janela, text=f"Livro: {livro_titulo} | Pessoa: {emprestimo[4]} | Data de Devolução: {emprestimo[3]}").pack(pady=2)
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+
+    try:
+        # Consulta para buscar todos os livros disponíveis
+        cursor.execute("SELECT id, titulo FROM livros")
+        livros = cursor.fetchall()
+
+        # Preencher o combobox com os títulos dos livros
+        livro_combobox['values'] = [livro[1] for livro in livros]
+
+        # Armazenar um dicionário com os títulos e IDs dos livros para mapear o título selecionado para o ID do livro
+        livro_id_map = {livro[1]: livro[0] for livro in livros}
+
+    except Error as e:
+        print(f"Erro ao carregar os livros disponíveis: {e}")
+        messagebox.showerror("Erro", "Ocorreu um erro ao carregar os livros disponíveis.")
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    # Função para adicionar estoque
+    def adicionar():
+        # Obter o ID do livro selecionado a partir do dicionário de mapeamento
+        livro_titulo = livro_var.get()
+        livro_id = livro_id_map.get(livro_titulo)
+
+        if livro_id is None:
+            messagebox.showwarning("Aviso", "Por favor, selecione um livro.")
+            return
+
+        quantidade = quantidade_var.get()
+
+        if not quantidade:
+            messagebox.showwarning("Aviso", "Por favor, insira a quantidade.")
+            return
+
+        try:
+            conn = connect_to_mysql()
+            cursor = conn.cursor()
+
+            # Consulta para atualizar a quantidade de estoque do livro selecionado
+            cursor.execute("UPDATE livros SET estoque =estoque + %s WHERE id = %s", (quantidade, livro_id))
+            conn.commit()
+
+            messagebox.showinfo("Sucesso", f"{quantidade} unidades adicionadas ao estoque do livro.")
+            adicionar_estoque_janela.destroy()
+
+            # Atualizar a quantidade em estoque na interface
+            for item in tree.get_children():
+                if int(tree.item(item)['text']) == livro_id:
+                    nova_quantidade = int(tree.item(item)['values'][2]) + quantidade
+                    tree.item(item, values=(livro_id, tree.item(item)['values'][1], nova_quantidade))
+
+        except Error as e:
+            print(f"Erro ao adicionar estoque: {e}")
+            messagebox.showerror("Erro", "Ocorreu um erro ao adicionar o estoque.")
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    # Função para subtrair estoque
+    def subtrair():
+        # Obter o ID do livro selecionado a partir do dicionário de mapeamento
+        livro_titulo = livro_var.get()
+        livro_id = livro_id_map.get(livro_titulo)
+
+        if livro_id is None:
+            messagebox.showwarning("Aviso", "Por favor, selecione um livro.")
+            return
+
+        quantidade = quantidade_subtrair_var.get()
+
+        if not quantidade:
+            messagebox.showwarning("Aviso", "Por favor, insira a quantidade.")
+            return
+
+        try:
+            conn = connect_to_mysql()
+            cursor = conn.cursor()
+
+            # Consulta para verificar se há estoque suficiente
+            cursor.execute("SELECT estoque FROM livros WHERE id = %s", (livro_id,))
+            estoque_atual = cursor.fetchone()[0]
+
+            if estoque_atual < quantidade:
+                messagebox.showwarning("Aviso", f"Não há estoque suficiente para subtrair {quantidade} unidades.")
+                return
+
+            # Consulta para subtrair a quantidade de estoque do livro selecionado
+            cursor.execute("UPDATE livros SET estoque =estoque - %s WHERE id = %s", (quantidade, livro_id))
+            conn.commit()
+
+            messagebox.showinfo("Sucesso", f"{quantidade} unidades subtraídas do estoque do livro.")
+            adicionar_estoque_janela.destroy()
+
+            # Atualizar a quantidade em estoque na interface
+            for item in tree.get_children():
+                if int(tree.item(item)['text']) == livro_id:
+                    nova_quantidade = int(tree.item(item)['values'][2]) - quantidade
+                    tree.item(item, values=(livro_id, tree.item(item)['values'][1], nova_quantidade))
+
+        except Error as e:
+            print(f"Erro ao subtrair estoque: {e}")
+            messagebox.showerror("Erro", "Ocorreu um erro ao subtrair o estoque.")
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    ttk.Label(adicionar_estoque_janela, text="Livro:").grid(row=0, column=0, padx=5, pady=5)
+    ttk.Label(adicionar_estoque_janela, text="Quantidade a Adicionar:").grid(row=1, column=0, padx=5, pady=5)
+    ttk.Label(adicionar_estoque_janela, text="Quantidade a Subtrair:").grid(row=2, column=0, padx=5, pady=5)
+
+    quantidade_var = tk.IntVar(adicionar_estoque_janela)
+    quantidade_entry = ttk.Entry(adicionar_estoque_janela, textvariable=quantidade_var)
+    quantidade_entry.grid(row=1, column=1, padx=5, pady=5)
+
+    quantidade_subtrair_var = tk.IntVar(adicionar_estoque_janela)
+    quantidade_subtrair_entry = ttk.Entry(adicionar_estoque_janela, textvariable=quantidade_subtrair_var)
+    quantidade_subtrair_entry.grid(row=2, column=1, padx=5, pady=5)
+
+    ttk.Button(adicionar_estoque_janela, text="Adicionar", command=adicionar).grid(row=3, column=0, padx=5, pady=5)
+    ttk.Button(adicionar_estoque_janela, text="Subtrair", command=subtrair).grid(row=3, column=1, padx=5, pady=5)
+
+
+# Após adicionar estoque, a interface será atualizada com a nova quantidade em estoque
+for item in tree.get_children():
+    livro_id = int(tree.item(item)['text'])
+    
+    sql = "SELECT estoque FROM livros WHERE id = %s"
+    mycursor.execute(sql, (livro_id,))
+    estoque = mycursor.fetchone()[0]
+
+    tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Disponível", estoque, tree.item(item)['values'][4]))
+
+btn_adicionar_estoque = ttk.Button(root, text="Adicionar Estoque", command=adicionar_estoque)
+btn_adicionar_estoque.pack(side=tk.LEFT, padx=5, pady=10)
+
+
 
 
 sql = "SELECT * FROM livros"
 mycursor.execute(sql)
 livros = mycursor.fetchall()
+
 for livro in livros:
-    tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], "Disponível", livro[3], livro[4]))
+    # Certifique-se de que os índices correspondam aos campos corretos na tupla
+    tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], livro[5]))  # Estoque é o índice 5
+
+
 
 
 btn_exibir_detalhes = ttk.Button(root, text="Exibir Detalhes", command=exibir_detalhes)
@@ -398,8 +569,8 @@ btn_emprestar_livro = ttk.Button(root, text="Emprestar Livro", command=emprestar
 btn_emprestar_livro.pack(side=tk.LEFT, padx=5, pady=10)
 
 btn_emprestimos_pendentes = ttk.Button(root, text="Empréstimos Pendentes", command=exibir_emprestimos_pendentes)
-btn_emprestimos_pendentes.pack(side=tk.LEFT, padx=5, pady=10)
 
+btn_emprestimos_pendentes.pack(side=tk.LEFT, padx=5, pady=10)
 
 
 
