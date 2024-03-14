@@ -282,7 +282,7 @@ def emprestar_livro(livro_titulo):
         return
 
     livro_id = int(tree.item(selected_item)['text'])
-    # Remove this line -> livro_titulo = tree.item(selected_item)['values'][1]
+    
 
     sql = "SELECT * FROM emprestimos WHERE livro_id = %s AND status = 'pendente'"
     mycursor.execute(sql, (livro_id,))
@@ -393,7 +393,7 @@ def adicionar_estoque():
     adicionar_estoque_janela = tk.Toplevel(root)
     adicionar_estoque_janela.title("Adicionar Estoque")
 
-    # Carregar os livros disponíveis no combobox
+    
     livro_var = tk.StringVar(adicionar_estoque_janela)
     livro_combobox = ttk.Combobox(adicionar_estoque_janela, textvariable=livro_var, state="readonly")
     livro_combobox.grid(row=0, column=1, padx=5, pady=5)
@@ -402,14 +402,14 @@ def adicionar_estoque():
     cursor = conn.cursor()
 
     try:
-        # Consulta para buscar todos os livros disponíveis
+       
         cursor.execute("SELECT id, titulo FROM livros")
         livros = cursor.fetchall()
 
-        # Preencher o combobox com os títulos dos livros
+        
         livro_combobox['values'] = [livro[1] for livro in livros]
 
-        # Armazenar um dicionário com os títulos e IDs dos livros para mapear o título selecionado para o ID do livro
+        
         livro_id_map = {livro[1]: livro[0] for livro in livros}
 
     except Error as e:
@@ -420,9 +420,9 @@ def adicionar_estoque():
         cursor.close()
         conn.close()
 
-    # Função para adicionar estoque
+   
     def adicionar():
-        # Obter o ID do livro selecionado a partir do dicionário de mapeamento
+        
         livro_titulo = livro_var.get()
         livro_id = livro_id_map.get(livro_titulo)
 
@@ -440,14 +440,14 @@ def adicionar_estoque():
             conn = connect_to_mysql()
             cursor = conn.cursor()
 
-            # Consulta para atualizar a quantidade de estoque do livro selecionado
+            
             cursor.execute("UPDATE livros SET estoque =estoque + %s WHERE id = %s", (quantidade, livro_id))
             conn.commit()
 
             messagebox.showinfo("Sucesso", f"{quantidade} unidades adicionadas ao estoque do livro.")
             adicionar_estoque_janela.destroy()
 
-            # Atualizar a quantidade em estoque na interface
+            
             for item in tree.get_children():
                 if int(tree.item(item)['text']) == livro_id:
                     nova_quantidade = int(tree.item(item)['values'][2]) + quantidade
@@ -461,9 +461,9 @@ def adicionar_estoque():
             cursor.close()
             conn.close()
 
-    # Função para subtrair estoque
+    
     def subtrair():
-        # Obter o ID do livro selecionado a partir do dicionário de mapeamento
+        
         livro_titulo = livro_var.get()
         livro_id = livro_id_map.get(livro_titulo)
 
@@ -481,7 +481,7 @@ def adicionar_estoque():
             conn = connect_to_mysql()
             cursor = conn.cursor()
 
-            # Consulta para verificar se há estoque suficiente
+            
             cursor.execute("SELECT estoque FROM livros WHERE id = %s", (livro_id,))
             estoque_atual = cursor.fetchone()[0]
 
@@ -489,14 +489,14 @@ def adicionar_estoque():
                 messagebox.showwarning("Aviso", f"Não há estoque suficiente para subtrair {quantidade} unidades.")
                 return
 
-            # Consulta para subtrair a quantidade de estoque do livro selecionado
+            
             cursor.execute("UPDATE livros SET estoque =estoque - %s WHERE id = %s", (quantidade, livro_id))
             conn.commit()
 
             messagebox.showinfo("Sucesso", f"{quantidade} unidades subtraídas do estoque do livro.")
             adicionar_estoque_janela.destroy()
 
-            # Atualizar a quantidade em estoque na interface
+           
             for item in tree.get_children():
                 if int(tree.item(item)['text']) == livro_id:
                     nova_quantidade = int(tree.item(item)['values'][2]) - quantidade
@@ -526,7 +526,7 @@ def adicionar_estoque():
     ttk.Button(adicionar_estoque_janela, text="Subtrair", command=subtrair).grid(row=3, column=1, padx=5, pady=5)
 
 
-# Após adicionar estoque, a interface será atualizada com a nova quantidade em estoque
+
 for item in tree.get_children():
     livro_id = int(tree.item(item)['text'])
     
@@ -547,8 +547,8 @@ mycursor.execute(sql)
 livros = mycursor.fetchall()
 
 for livro in livros:
-    # Certifique-se de que os índices correspondam aos campos corretos na tupla
-    tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], livro[5]))  # Estoque é o índice 5
+   
+    tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], livro[5])) 
 
 
 
