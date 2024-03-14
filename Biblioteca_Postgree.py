@@ -186,7 +186,6 @@ def exibir_detalhes():
     ttk.Label(detalhes_janela, text="Ano de Publicação: " + str(livro[3]), font=("Helvetica", 12)).pack(pady=5)
     ttk.Label(detalhes_janela, text="Editora: " + livro[4], font=("Helvetica", 12)).pack(pady=5)
 
-
 def remover_livro():
     selected_item = tree.focus()
     if not selected_item:
@@ -195,13 +194,11 @@ def remover_livro():
 
     livro_id = int(tree.item(selected_item)['text'])
 
-    
     sql_remove_livro = "DELETE FROM livros WHERE id = %s"
     postgres_cursor.execute(sql_remove_livro, (livro_id,))
     conn.commit()
 
     tree.delete(selected_item)
-
 
 def adicionar_livro():
     adicionar_janela = tk.Toplevel(root)
@@ -242,6 +239,110 @@ def adicionar_livro():
     ttk.Entry(adicionar_janela, textvariable=editora_var).grid(row=3, column=1, padx=5, pady=5)
 
     ttk.Button(adicionar_janela, text="Adicionar", command=adicionar).grid(row=4, columnspan=2, pady=10)
+
+def editar_livro():
+    selected_item = tree.focus()
+    if not selected_item:
+        tk.messagebox.showwarning("Aviso", "Por favor, selecione um livro para editar")
+        return
+
+    livro_id = int(tree.item(selected_item)['text'])
+    livro_titulo = tree.item(selected_item)['values'][1]
+    livro_isbn = tree.item(selected_item)['values'][2]
+    livro_ano = tree.item(selected_item)['values'][3]
+    livro_editora = tree.item(selected_item)['values'][4]
+
+    editar_janela = tk.Toplevel(root)
+    editar_janela.title("Editar Livro")
+
+    titulo_var = tk.StringVar(editar_janela, value=livro_titulo)
+    isbn_var = tk.StringVar(editar_janela, value=livro_isbn)
+    ano_var = tk.StringVar(editar_janela, value=livro_ano)
+    editora_var = tk.StringVar(editar_janela, value=livro_editora)
+
+    def atualizar():
+        novo_titulo = titulo_var.get()
+        novo_isbn = isbn_var.get()
+        novo_ano = ano_var.get()
+        nova_editora = editora_var.get()
+
+        if not (novo_titulo and novo_isbn and novo_ano and nova_editora):
+            tk.messagebox.showwarning("Aviso", "Por favor, preencha todos os campos")
+            return
+
+        sql_update_livro = "UPDATE livros SET titulo = %s, isbn = %s, ano_publicacao = %s, editora = %s WHERE id = %s"
+        val = (novo_titulo, novo_isbn, novo_ano, nova_editora, livro_id)
+        postgres_cursor.execute(sql_update_livro, val)
+        conn.commit()
+
+        messagebox.showinfo("Sucesso", "Informações do livro atualizadas com sucesso.")
+        editar_janela.destroy()
+
+        tree.item(selected_item, values=(livro_id, novo_titulo, "Disponível", novo_ano, nova_editora))
+
+    ttk.Label(editar_janela, text="Título:").grid(row=0, column=0, padx=5, pady=5)
+    ttk.Entry(editar_janela, textvariable=titulo_var).grid(row=0, column=1, padx=5, pady=5)
+    ttk.Label(editar_janela, text="ISBN:").grid(row=1, column=0, padx=5, pady=5)
+    ttk.Entry(editar_janela, textvariable=isbn_var).grid(row=1, column=1, padx=5, pady=5)
+    ttk.Label(editar_janela, text="Ano de Publicação:").grid(row=2, column=0, padx=5, pady=5)
+    ttk.Entry(editar_janela, textvariable=ano_var).grid(row=2, column=1, padx=5, pady=5)
+    ttk.Label(editar_janela, text="Editora:").grid(row=3, column=0, padx=5, pady=5)
+    ttk.Entry(editar_janela, textvariable=editora_var).grid(row=3, column=1, padx=5, pady=5)
+
+    ttk.Button(editar_janela, text="Atualizar", command=atualizar).grid(row=4, columnspan=2, pady=10)
+
+def carregar_livros():
+    try:
+        sql = "SELECT * FROM livros"
+        postgres_cursor.execute(sql)
+        livros = postgres_cursor.fetchall()
+
+        for livro in livros:
+            tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], "Disponível", livro[3], livro[4]))
+
+    except psycopg2.Error as e:
+        tk.messagebox.showerror("Erro", f"Erro ao carregar livros: {e}")
+
+def conectar_bd():
+    try:
+        conn = psycopg2.connect(database="Biblioteca", user="postgres", password="gerador8", host="localhost", port="5432")
+        postgres_cursor = conn.cursor()
+        print("Conexão bem-sucedida ao banco de dados PostgreSQL!")
+        return conn, postgres_cursor
+    except psycopg2.Error as e:
+        tk.messagebox.showerror("Erro", f"Erro ao conectar ao PostgreSQL: {e}")
+
+root = tk.Tk()
+root.title("Gerenciamento de Biblioteca")
+
+conn, postgres_cursor = conectar_bd()
+
+tree = ttk.Treeview(root, columns=("ID", "Título", "Status", "Ano", "Editora"), show="headings")
+tree.heading("ID", text="ID")
+tree.heading("Título", text="Título")
+tree.heading("Status", text="Status")
+tree.heading("Ano", text="Ano")
+tree.heading("Editora", text="Editora")
+
+tree.pack(padx=10, pady=10)
+
+carregar_livros()
+
+menu_bar = tk.Menu(root)
+root.config(menu=menu_bar)
+
+file_menu = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Opções", menu=file_menu)
+file_menu.add_command(label="Detalhes", command=exibir_detalhes)
+file_menu.add_separator()
+file_menu.add_command(label="Adicionar Livro", command=adicionar_livro)
+file_menu.add_command(label="Editar Livro", command=editar_livro)
+file_menu.add_separator()
+file_menu.add_command(label="Remover Livro", command=remover_livro)
+file_menu.add_separator()
+file_menu.add_command(label="Sair", command=root.quit)
+
+root.mainloop()
     
     
 def editar_livro():
@@ -404,6 +505,144 @@ def exibir_emprestimos_pendentes():
 
         ttk.Label(pendentes_janela, text=f"Livro: {livro_titulo} | Pessoa: {emprestimo[4]} | Data de Devolução: {emprestimo[3]}").pack(pady=2)
 
+def adicionar_estoque():
+    adicionar_estoque_janela = tk.Toplevel(root)
+    adicionar_estoque_janela.title("Adicionar Estoque")
+
+    livro_var = tk.StringVar(adicionar_estoque_janela)
+    livro_combobox = ttk.Combobox(adicionar_estoque_janela, textvariable=livro_var, state="readonly")
+    livro_combobox.grid(row=0, column=1, padx=5, pady=5)
+
+    conn = psycopg2.connect(database="Biblioteca", user="postgres", password="gerador8", host="localhost", port="5432")
+    postgres_cursor = conn.cursor()
+
+    try:
+        postgres_cursor.execute("SELECT id, titulo FROM livros")
+        livros = postgres_cursor.fetchall()
+
+        livro_combobox['values'] = [livro[1] for livro in livros]
+
+        livro_id_map = {livro[1]: livro[0] for livro in livros}
+
+    except psycopg2.Error as e:
+        print(f"Erro ao carregar os livros disponíveis: {e}")
+        messagebox.showerror("Erro", "Ocorreu um erro ao carregar os livros disponíveis.")
+
+    finally:
+        postgres_cursor.close()
+        conn.close()
+
+    def adicionar():
+        livro_titulo = livro_var.get()
+        livro_id = livro_id_map.get(livro_titulo)
+
+        if livro_id is None:
+            messagebox.showwarning("Aviso", "Por favor, selecione um livro.")
+            return
+
+        quantidade = quantidade_var.get()
+
+        if not quantidade:
+            messagebox.showwarning("Aviso", "Por favor, insira a quantidade.")
+            return
+
+        try:
+            conn = psycopg2.connect(database="Biblioteca", user="postgres", password="gerador8", host="localhost", port="5432")
+            postgres_cursor = conn.cursor()
+
+            postgres_cursor.execute("UPDATE livros SET estoque = estoque + %s WHERE id = %s", (quantidade, livro_id))
+            conn.commit()
+
+            messagebox.showinfo("Sucesso", f"{quantidade} unidades adicionadas ao estoque do livro.")
+            adicionar_estoque_janela.destroy()
+
+            for item in tree.get_children():
+                if int(tree.item(item)['text']) == livro_id:
+                    nova_quantidade = int(tree.item(item)['values'][3]) + quantidade
+                    tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Disponível", nova_quantidade, tree.item(item)['values'][4]))
+
+        except psycopg2.Error as e:
+            print(f"Erro ao adicionar estoque: {e}")
+            messagebox.showerror("Erro", "Ocorreu um erro ao adicionar o estoque.")
+
+        finally:
+            postgres_cursor.close()
+            conn.close()
+
+    def subtrair():
+        livro_titulo = livro_var.get()
+        livro_id = livro_id_map.get(livro_titulo)
+
+        if livro_id is None:
+            messagebox.showwarning("Aviso", "Por favor, selecione um livro.")
+            return
+
+        quantidade = quantidade_subtrair_var.get()
+
+        if not quantidade:
+            messagebox.showwarning("Aviso", "Por favor, insira a quantidade.")
+            return
+
+        try:
+            conn = psycopg2.connect(database="Biblioteca", user="postgres", password="gerador8", host="localhost", port="5432")
+            postgres_cursor = conn.cursor()
+
+            postgres_cursor.execute("SELECT estoque FROM livros WHERE id = %s", (livro_id,))
+            estoque_atual = postgres_cursor.fetchone()[0]
+
+            if estoque_atual < quantidade:
+                messagebox.showwarning("Aviso", f"Não há estoque suficiente para subtrair {quantidade} unidades.")
+                return
+
+            postgres_cursor.execute("UPDATE livros SET estoque = estoque - %s WHERE id = %s", (quantidade, livro_id))
+            conn.commit()
+
+            messagebox.showinfo("Sucesso", f"{quantidade} unidades subtraídas do estoque do livro.")
+            adicionar_estoque_janela.destroy()
+
+            for item in tree.get_children():
+                if int(tree.item(item)['text']) == livro_id:
+                    nova_quantidade = int(tree.item(item)['values'][3]) - quantidade
+                    tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Disponível", nova_quantidade, tree.item(item)['values'][4]))
+
+        except psycopg2.Error as e:
+            print(f"Erro ao subtrair estoque: {e}")
+            messagebox.showerror("Erro", "Ocorreu um erro ao subtrair o estoque.")
+
+        finally:
+            postgres_cursor.close()
+            conn.close()
+
+    ttk.Label(adicionar_estoque_janela, text="Livro:").grid(row=0, column=0, padx=5, pady=5)
+    ttk.Label(adicionar_estoque_janela, text="Quantidade a Adicionar:").grid(row=1, column=0, padx=5, pady=5)
+    ttk.Label(adicionar_estoque_janela, text="Quantidade a Subtrair:").grid(row=2, column=0, padx=5, pady=5)
+
+    quantidade_var = tk.IntVar(adicionar_estoque_janela)
+    quantidade_entry = ttk.Entry(adicionar_estoque_janela, textvariable=quantidade_var)
+    quantidade_entry.grid(row=1, column=1, padx=5, pady=5)
+
+    quantidade_subtrair_var = tk.IntVar(adicionar_estoque_janela)
+    quantidade_subtrair_entry = ttk.Entry(adicionar_estoque_janela, textvariable=quantidade_subtrair_var)
+    quantidade_subtrair_entry.grid(row=2, column=1, padx=5, pady=5)
+
+    ttk.Button(adicionar_estoque_janela, text="Adicionar", command=adicionar).grid(row=3, column=0, padx=5, pady=5)
+    ttk.Button(adicionar_estoque_janela, text="Subtrair", command=subtrair).grid(row=3, column=1, padx=5, pady=5)
+
+
+for item in tree.get_children():
+    livro_id = int(tree.item(item)['text'])
+
+    conn = psycopg2.connect(database="Biblioteca", user="postgres", password="gerador8", host="localhost", port="5432")
+    postgres_cursor = conn.cursor()
+
+    sql = "SELECT estoque FROM livros WHERE id = %s"
+    postgres_cursor.execute(sql, (livro_id,))
+    estoque = postgres_cursor.fetchone()[0]
+
+    tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Disponível", estoque, tree.item(item)['values'][4]))
+
+btn_adicionar_estoque = ttk.Button(root, text="Adicionar Estoque", command=adicionar_estoque)
+btn_adicionar_estoque.pack(side=tk.LEFT, padx=5, pady=10)
 
 try:
     conn = psycopg2.connect(
