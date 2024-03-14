@@ -5,13 +5,12 @@ CREATE TABLE livros (
     titulo VARCHAR(255) NOT NULL,
     isbn VARCHAR(20),
     ano_publicacao INTEGER,
-    editora VARCHAR(100)
+    editora VARCHAR(100),
+    estoque INT
 );
 
-
-
 CREATE TABLE emprestimos (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     livro_id INTEGER,
     data_emprestimo DATE,
     data_devolucao DATE,
