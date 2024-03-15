@@ -9,8 +9,8 @@
 <br>
 
 ![Resultado parcial do projeto](https://cdn.discordapp.com/attachments/873041648395894824/1218078263797088347/image.png?ex=66065ac8&is=65f3e5c8&hm=f69758241099015c090616271adc7a58fb3d4feb161da42e1b2e282dcab1956c&)
-                              (https://cdn.discordapp.com/attachments/873041648395894824/1218078352934699018/Capturar1.PNG?ex=66065ade&is=65f3e5de&hm=814eb3fa75bdbbeb86b93b35944a7e08c90edb6fc0a45898c26b1946d3ff0b09&)
-                               (https://cdn.discordapp.com/attachments/873041648395894824/1218078353123180624/Capturar2.PNG?ex=66065ade&is=65f3e5de&hm=acf2e57e6d2f30174b45352de59b0d953dbc58575d61a03e0ed83b4b4963969f&)
+ ![Resultado parcial do projeto](https://cdn.discordapp.com/attachments/873041648395894824/1218078352934699018/Capturar1.PNG?ex=66065ade&is=65f3e5de&hm=814eb3fa75bdbbeb86b93b35944a7e08c90edb6fc0a45898c26b1946d3ff0b09&)
+  ![Resultado parcial do projeto](https://cdn.discordapp.com/attachments/873041648395894824/1218078353123180624/Capturar2.PNG?ex=66065ade&is=65f3e5de&hm=acf2e57e6d2f30174b45352de59b0d953dbc58575d61a03e0ed83b4b4963969f&)
 
 
 
