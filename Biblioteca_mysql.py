@@ -5,9 +5,10 @@ from datetime import datetime
 import sys
 from mysql.connector import Error
 
+
 def on_closing():
     if messagebox.askokcancel("Fechar", "Tem certeza que deseja sair?"):
-        root.destroy()  
+        root.destroy()
         sys.exit(0)
 
 mydb = mysql.connector.connect(
@@ -119,10 +120,11 @@ ttk.Entry(root, textvariable=username_var, font=("Helvetica", 12)).grid(row=0, c
 ttk.Label(root, text="Senha:", font=("Helvetica", 12)).grid(row=1, column=0, padx=5, pady=5)
 ttk.Entry(root, textvariable=password_var, show="*", font=("Helvetica", 12)).grid(row=1, column=1, padx=5, pady=5)
 
-ttk.Button(root, text="Login", command=login_user, style="PrimaryButton.TButton").grid(row=2, columnspan=2, pady=10)
-ttk.Button(root, text="Registrar Novo Usuário", command=register_new_user, style="PrimaryButton.TButton").grid(row=3, columnspan=2, pady=10)
+ttk.Button(root, text="Login", command=login_user).grid(row=2, columnspan=2, pady=10)
+ttk.Button(root, text="Registrar Novo Usuário", command=register_new_user).grid(row=3, columnspan=2, pady=10)
 
 root.mainloop()
+
 
 
 
@@ -140,6 +142,26 @@ tree.heading("Ano de Publicação", text="Ano de Publicação")
 tree.heading("Editora", text="Editora")
 tree.pack(padx=10, pady=10)
 
+def carregar_dados_iniciais():
+    try:
+        cursor = mydb.cursor()
+        cursor.execute("SELECT id, titulo, status, ano_publicacao, editora FROM livros")
+        livros = cursor.fetchall()
+
+        # Limpar a árvore antes de adicionar os novos dados
+        for item in tree.get_children():
+            tree.delete(item)
+
+        # Inserir os novos dados na árvore
+        for livro in livros:
+            tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], livro[2], livro[3], livro[4]))
+    except Error as e:
+        print(f"Erro ao carregar dados do banco de dados: {e}")
+    finally:
+        cursor.close()
+
+# Chamar a função para carregar dados iniciais durante a inicialização do programa
+carregar_dados_iniciais()
 def exibir_detalhes():
     selected_item = tree.focus()
 
@@ -239,10 +261,16 @@ def editar_livro():
         messagebox.showwarning("Aviso", "Por favor, selecione um livro para editar.")
         return
 
+    # Verificar se o item selecionado tem valores suficientes
+    item_values = tree.item(selected_item)['values']
+    if len(item_values) < 5:
+        messagebox.showerror("Erro", "Os valores do livro selecionado estão incompletos.")
+        return
+
     livro_id = int(tree.item(selected_item)['text'])
-    livro_titulo = tree.item(selected_item)['values'][1]
-    livro_ano = tree.item(selected_item)['values'][3]
-    livro_editora = tree.item(selected_item)['values'][4]
+    livro_titulo = item_values[1]
+    livro_ano = item_values[3]
+    livro_editora = item_values[4]
 
     editar_janela = tk.Toplevel(root)
     editar_janela.title("Editar Livro")
@@ -274,6 +302,7 @@ def editar_livro():
     ttk.Entry(editar_janela, textvariable=nova_editora_var).grid(row=2, column=1, padx=5, pady=5)
 
     ttk.Button(editar_janela, text="Aplicar", command=aplicar).grid(row=3, columnspan=2, pady=10)
+
     
 def emprestar_livro(livro_titulo):
     selected_item = tree.focus()
@@ -282,7 +311,7 @@ def emprestar_livro(livro_titulo):
         return
 
     livro_id = int(tree.item(selected_item)['text'])
-    
+    # Remove this line -> livro_titulo = tree.item(selected_item)['values'][1]
 
     sql = "SELECT * FROM emprestimos WHERE livro_id = %s AND status = 'pendente'"
     mycursor.execute(sql, (livro_id,))
@@ -393,7 +422,6 @@ def adicionar_estoque():
     adicionar_estoque_janela = tk.Toplevel(root)
     adicionar_estoque_janela.title("Adicionar Estoque")
 
-    
     livro_var = tk.StringVar(adicionar_estoque_janela)
     livro_combobox = ttk.Combobox(adicionar_estoque_janela, textvariable=livro_var, state="readonly")
     livro_combobox.grid(row=0, column=1, padx=5, pady=5)
@@ -402,14 +430,11 @@ def adicionar_estoque():
     cursor = conn.cursor()
 
     try:
-       
         cursor.execute("SELECT id, titulo FROM livros")
         livros = cursor.fetchall()
 
-        
         livro_combobox['values'] = [livro[1] for livro in livros]
 
-        
         livro_id_map = {livro[1]: livro[0] for livro in livros}
 
     except Error as e:
@@ -420,9 +445,7 @@ def adicionar_estoque():
         cursor.close()
         conn.close()
 
-   
     def adicionar():
-        
         livro_titulo = livro_var.get()
         livro_id = livro_id_map.get(livro_titulo)
 
@@ -440,18 +463,18 @@ def adicionar_estoque():
             conn = connect_to_mysql()
             cursor = conn.cursor()
 
-            
-            cursor.execute("UPDATE livros SET estoque =estoque + %s WHERE id = %s", (quantidade, livro_id))
-            conn.commit()
-
-            messagebox.showinfo("Sucesso", f"{quantidade} unidades adicionadas ao estoque do livro.")
-            adicionar_estoque_janela.destroy()
-
-            
             for item in tree.get_children():
                 if int(tree.item(item)['text']) == livro_id:
-                    nova_quantidade = int(tree.item(item)['values'][2]) + quantidade
-                    tree.item(item, values=(livro_id, tree.item(item)['values'][1], nova_quantidade))
+                    if tree.item(item)['values'][2] == "Disponível":
+                        cursor.execute("UPDATE livros SET estoque = estoque + %s WHERE id = %s", (quantidade, livro_id))
+                        conn.commit()
+
+                        messagebox.showinfo("Sucesso", f"{quantidade} unidades adicionadas ao estoque do livro.")
+                        adicionar_estoque_janela.destroy()
+
+                        nova_quantidade = int(tree.item(item)['values'][3]) + quantidade
+                        tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Disponível", nova_quantidade, tree.item(item)['values'][4]))
+                   
 
         except Error as e:
             print(f"Erro ao adicionar estoque: {e}")
@@ -461,9 +484,7 @@ def adicionar_estoque():
             cursor.close()
             conn.close()
 
-    
     def subtrair():
-        
         livro_titulo = livro_var.get()
         livro_id = livro_id_map.get(livro_titulo)
 
@@ -471,7 +492,7 @@ def adicionar_estoque():
             messagebox.showwarning("Aviso", "Por favor, selecione um livro.")
             return
 
-        quantidade = quantidade_subtrair_var.get()
+        quantidade = quantidade_var.get()
 
         if not quantidade:
             messagebox.showwarning("Aviso", "Por favor, insira a quantidade.")
@@ -481,27 +502,18 @@ def adicionar_estoque():
             conn = connect_to_mysql()
             cursor = conn.cursor()
 
-            
-            cursor.execute("SELECT estoque FROM livros WHERE id = %s", (livro_id,))
-            estoque_atual = cursor.fetchone()[0]
-
-            if estoque_atual < quantidade:
-                messagebox.showwarning("Aviso", f"Não há estoque suficiente para subtrair {quantidade} unidades.")
-                return
-
-            
-            cursor.execute("UPDATE livros SET estoque =estoque - %s WHERE id = %s", (quantidade, livro_id))
-            conn.commit()
-
-            messagebox.showinfo("Sucesso", f"{quantidade} unidades subtraídas do estoque do livro.")
-            adicionar_estoque_janela.destroy()
-
-           
             for item in tree.get_children():
                 if int(tree.item(item)['text']) == livro_id:
-                    nova_quantidade = int(tree.item(item)['values'][2]) - quantidade
-                    tree.item(item, values=(livro_id, tree.item(item)['values'][1], nova_quantidade))
+                    if tree.item(item)['values'][2] == "Disponível":
+                        cursor.execute("UPDATE livros SET estoque = estoque - %s WHERE id = %s", (quantidade, livro_id))
+                        conn.commit()
 
+                        messagebox.showinfo("Sucesso", f"{quantidade} unidades subtraídas do estoque do livro.")
+                        adicionar_estoque_janela.destroy()
+
+                        nova_quantidade = int(tree.item(item)['values'][3]) - quantidade
+                        tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Disponível", nova_quantidade, tree.item(item)['values'][4]))
+                    
         except Error as e:
             print(f"Erro ao subtrair estoque: {e}")
             messagebox.showerror("Erro", "Ocorreu um erro ao subtrair o estoque.")
@@ -511,22 +523,19 @@ def adicionar_estoque():
             conn.close()
 
     ttk.Label(adicionar_estoque_janela, text="Livro:").grid(row=0, column=0, padx=5, pady=5)
-    ttk.Label(adicionar_estoque_janela, text="Quantidade a Adicionar:").grid(row=1, column=0, padx=5, pady=5)
-    ttk.Label(adicionar_estoque_janela, text="Quantidade a Subtrair:").grid(row=2, column=0, padx=5, pady=5)
+    ttk.Label(adicionar_estoque_janela, text="Quantidade a Adicionar/Subtrair:").grid(row=1, column=0, padx=5, pady=5)
 
     quantidade_var = tk.IntVar(adicionar_estoque_janela)
-    quantidade_entry = ttk.Entry(adicionar_estoque_janela, textvariable=quantidade_var)
-    quantidade_entry.grid(row=1, column=1, padx=5, pady=5)
+    ttk.Entry(adicionar_estoque_janela, textvariable=quantidade_var).grid(row=1, column=1, padx=5, pady=5)
 
-    quantidade_subtrair_var = tk.IntVar(adicionar_estoque_janela)
-    quantidade_subtrair_entry = ttk.Entry(adicionar_estoque_janela, textvariable=quantidade_subtrair_var)
-    quantidade_subtrair_entry.grid(row=2, column=1, padx=5, pady=5)
-
-    ttk.Button(adicionar_estoque_janela, text="Adicionar", command=adicionar).grid(row=3, column=0, padx=5, pady=5)
-    ttk.Button(adicionar_estoque_janela, text="Subtrair", command=subtrair).grid(row=3, column=1, padx=5, pady=5)
+    ttk.Button(adicionar_estoque_janela, text="Adicionar", command=adicionar).grid(row=2, column=0, padx=5, pady=5)
+    ttk.Button(adicionar_estoque_janela, text="Subtrair", command=subtrair).grid(row=2, column=1, padx=5, pady=5)
 
 
 
+
+
+# Após adicionar estoque, a interface será atualizada com a nova quantidade em estoque
 for item in tree.get_children():
     livro_id = int(tree.item(item)['text'])
     
@@ -547,8 +556,7 @@ mycursor.execute(sql)
 livros = mycursor.fetchall()
 
 for livro in livros:
-   
-    tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], livro[5])) 
+    tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], "Disponível", livro[3], livro[4], livro[5]))
 
 
 
