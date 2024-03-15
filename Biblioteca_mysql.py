@@ -148,11 +148,11 @@ def carregar_dados_iniciais():
         cursor.execute("SELECT id, titulo, status, ano_publicacao, editora FROM livros")
         livros = cursor.fetchall()
 
-        # Limpar a árvore antes de adicionar os novos dados
+       
         for item in tree.get_children():
             tree.delete(item)
 
-        # Inserir os novos dados na árvore
+     
         for livro in livros:
             tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], livro[2], livro[3], livro[4]))
     except Error as e:
@@ -160,7 +160,7 @@ def carregar_dados_iniciais():
     finally:
         cursor.close()
 
-# Chamar a função para carregar dados iniciais durante a inicialização do programa
+
 carregar_dados_iniciais()
 def exibir_detalhes():
     selected_item = tree.focus()
@@ -261,7 +261,7 @@ def editar_livro():
         messagebox.showwarning("Aviso", "Por favor, selecione um livro para editar.")
         return
 
-    # Verificar se o item selecionado tem valores suficientes
+    
     item_values = tree.item(selected_item)['values']
     if len(item_values) < 5:
         messagebox.showerror("Erro", "Os valores do livro selecionado estão incompletos.")
@@ -311,7 +311,7 @@ def emprestar_livro(livro_titulo):
         return
 
     livro_id = int(tree.item(selected_item)['text'])
-    # Remove this line -> livro_titulo = tree.item(selected_item)['values'][1]
+    
 
     sql = "SELECT * FROM emprestimos WHERE livro_id = %s AND status = 'pendente'"
     mycursor.execute(sql, (livro_id,))
@@ -535,7 +535,7 @@ def adicionar_estoque():
 
 
 
-# Após adicionar estoque, a interface será atualizada com a nova quantidade em estoque
+
 for item in tree.get_children():
     livro_id = int(tree.item(item)['text'])
     
