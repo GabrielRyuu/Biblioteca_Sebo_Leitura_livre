@@ -5,7 +5,7 @@ CREATE TABLE livros (
     ano_publicacao INTEGER,
     editora VARCHAR(100),
     estoque INT,
-    stauts VARCHAR(50)
+    status VARCHAR(50)
 );
 
 CREATE TABLE emprestimos (
