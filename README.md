@@ -47,6 +47,7 @@ Esse projeto foi desenvolvido com as seguintes Linguagens:
 - datetime: (https://docs.python.org/pt-br/3/library/datetime.html)
 - bcrypt (https://pypi.org/project/bcrypt/)
 - psycopg2 (https://pypi.org/project/psycopg2/)
+- Photoimage (https://www.pythontutorial.net/tkinter/tkinter-photoimage/)
 
 
 ## 🔗 Links
