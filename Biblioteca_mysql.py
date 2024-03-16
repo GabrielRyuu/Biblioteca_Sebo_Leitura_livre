@@ -1,9 +1,13 @@
+import hashlib
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import Image, PhotoImage, ttk, messagebox
+from tkinter.tix import IMAGETEXT
 import mysql.connector
 from datetime import datetime
 import sys
 from mysql.connector import Error
+from PIL import Image
+from PIL import ImageTk
 
 
 def on_closing():
@@ -17,7 +21,31 @@ mydb = mysql.connector.connect(
     password="gerador8",
     database="biblioteca_mysql"
 )
+
 print("Conexão bem-sucedida ao banco de dados MySQL!")
+
+
+class UserSession:
+    def __init__(self):
+        self.logged_in = False
+        self.username = None
+
+    def login(self, username):
+        self.username = username
+        self.logged_in = True
+
+    def logout(self):
+        self.username = None
+        self.logged_in = False
+
+    def is_logged_in(self):
+        return self.logged_in
+
+    def get_username(self):
+        return self.username
+
+session = UserSession()
+
 
 def connect_to_mysql():
     try:
@@ -30,17 +58,23 @@ def connect_to_mysql():
         if conn.is_connected():
             print("Conexão bem-sucedida ao banco de dados MySQL!")
             return conn
-    except Error as e:
+    except mysql.connector.Error as e:
         print(f"Erro ao conectar ao MySQL: {e}")
+        return None
+
 
 def register_user(conn, username, password):
     try:
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)", (username, password))
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        cursor.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)", (username, hashed_password))
         conn.commit()
         print("Usuário registrado com sucesso!")
-    except Error as e:
+        return True
+    except mysql.connector.Error as e:
         print(f"Erro ao registrar usuário: {e}")
+        return False
+
 
 def verify_user(conn, username, password):
     try:
@@ -48,7 +82,8 @@ def verify_user(conn, username, password):
         cursor.execute("SELECT password_hash FROM users WHERE username = %s", (username,))
         password_hash = cursor.fetchone()
         if password_hash:
-            if password == password_hash[0]:
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            if hashed_password == password_hash[0]:
                 print("Credenciais de usuário válidas. Login bem-sucedido!")
                 return True
             else:
@@ -57,9 +92,10 @@ def verify_user(conn, username, password):
         else:
             print("Usuário não encontrado.")
             return False
-    except Error as e:
+    except mysql.connector.Error as e:
         print(f"Erro ao verificar usuário: {e}")
         return False
+
 
 def register_new_user():
     def register():
@@ -76,9 +112,18 @@ def register_new_user():
             return
 
         conn = connect_to_mysql()
-        register_user(conn, username, password)
-        conn.close()
-        register_window.destroy()
+        if conn:
+            if register_user(conn, username, password):
+                conn.close()
+                register_window.destroy()
+                return
+            else:
+                messagebox.showerror("Erro", "Ocorreu um erro ao registrar o usuário.")
+                conn.close()
+                return
+        else:
+            messagebox.showerror("Erro", "Não foi possível conectar ao banco de dados.")
+            return
 
     register_window = tk.Toplevel(root)
     register_window.title("Registrar Novo Usuário")
@@ -96,6 +141,8 @@ def register_new_user():
 
     ttk.Button(register_window, text="Registrar", command=register).grid(row=3, columnspan=2, pady=10)
 
+
+
 def login_user():
     username = username_var.get()
     password = password_var.get()
@@ -105,27 +152,51 @@ def login_user():
         return
 
     conn = connect_to_mysql()
-    if verify_user(conn, username, password):
-        conn.close()
-        root.destroy()
+    if conn:
+        if verify_user(conn, username, password):
+            session.login(username)
+            conn.close()
+            root.destroy()
+            return
+        else:
+            conn.close()
+            return
+    else:
+        messagebox.showerror("Erro", "Não foi possível conectar ao banco de dados.")
+        return
 
 root = tk.Tk()
-root.title("Autenticação de Usuário")
-
-username_var = tk.StringVar(root)
-password_var = tk.StringVar(root)
+root.title("Tela de Login")
 root.protocol("WM_DELETE_WINDOW", on_closing)
-ttk.Label(root, text="Nome de Usuário:", font=("Helvetica", 12)).grid(row=0, column=0, padx=5, pady=5)
-ttk.Entry(root, textvariable=username_var, font=("Helvetica", 12)).grid(row=0, column=1, padx=5, pady=5)
-ttk.Label(root, text="Senha:", font=("Helvetica", 12)).grid(row=1, column=0, padx=5, pady=5)
-ttk.Entry(root, textvariable=password_var, show="*", font=("Helvetica", 12)).grid(row=1, column=1, padx=5, pady=5)
 
-ttk.Button(root, text="Login", command=login_user).grid(row=2, columnspan=2, pady=10)
-ttk.Button(root, text="Registrar Novo Usuário", command=register_new_user).grid(row=3, columnspan=2, pady=10)
+background_image = Image.open("c:\\Users\\Gabriel\\Desktop\\Imagem\\login.png")
+background_image = background_image.resize((800, 600), Image.LANCZOS)
+background_image = ImageTk.PhotoImage(background_image)
 
+
+background_label = tk.Label(root, image=background_image)
+background_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+
+frame = ttk.Frame(root, padding="20")
+frame.place(relx=0.5, rely=0.5, anchor="center")
+root.geometry("800x600")  
+
+username_var = tk.StringVar()
+password_var = tk.StringVar()
+
+
+ttk.Label(frame, text="Nome de Usuário:", font=("Helvetica", 12)).grid(row=0, column=0, padx=5, pady=5)
+ttk.Entry(frame, textvariable=username_var, font=("Helvetica", 12)).grid(row=0, column=1, padx=5, pady=5)
+ttk.Label(frame, text="Senha:", font=("Helvetica", 12)).grid(row=1, column=0, padx=5, pady=5)
+ttk.Entry(frame, textvariable=password_var, show="*", font=("Helvetica", 12)).grid(row=1, column=1, padx=5, pady=5)
+
+# Botões para fazer login e registrar novo usuário
+ttk.Button(frame, text="Login", command=login_user).grid(row=2, columnspan=2, pady=10)
+ttk.Button(frame, text="Registrar Novo Usuário", command=register_new_user).grid(row=3, columnspan=2, pady=10)
+
+session = UserSession()
 root.mainloop()
-
-
 
 
 
@@ -134,34 +205,35 @@ mycursor = mydb.cursor()
 root = tk.Tk()
 root.title("Biblioteca Gabriel")
 
-tree = ttk.Treeview(root, columns=("ID", "Título", "Status", "Ano de Publicação", "Editora"), show="headings")
+tree = ttk.Treeview(root, columns=("ID", "Título", "Status", "Ano de Publicação", "Editora", "Estoque"), show="headings")
 tree.heading("ID", text="ID")
 tree.heading("Título", text="Título")
 tree.heading("Status", text="Status")
 tree.heading("Ano de Publicação", text="Ano de Publicação")
 tree.heading("Editora", text="Editora")
+tree.heading("Estoque", text="Estoque")
 tree.pack(padx=10, pady=10)
+tree.column("Estoque", anchor="center")
 
 def carregar_dados_iniciais():
     try:
         cursor = mydb.cursor()
-        cursor.execute("SELECT id, titulo, status, ano_publicacao, editora FROM livros")
+        cursor.execute("SELECT id, titulo, status, ano_publicacao, estoque, editora FROM livros")
         livros = cursor.fetchall()
 
        
         for item in tree.get_children():
             tree.delete(item)
 
-     
+        
         for livro in livros:
-            tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], livro[2], livro[3], livro[4]))
+            tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], livro[2], livro[3], livro[4], livro[5]))
     except Error as e:
         print(f"Erro ao carregar dados do banco de dados: {e}")
     finally:
         cursor.close()
 
 
-carregar_dados_iniciais()
 def exibir_detalhes():
     selected_item = tree.focus()
 
@@ -184,13 +256,15 @@ def exibir_detalhes():
 
     ttk.Label(detalhes_janela, text="ID: " + str(livro[0]), font=("Helvetica", 12)).pack(pady=5)
     ttk.Label(detalhes_janela, text="Título: " + livro[1], font=("Helvetica", 14, "bold")).pack(pady=5)
-    
-   
-    isbn_text = "ISBN: " + (livro[2] if livro[2] is not None else "")
-    ttk.Label(detalhes_janela, text=isbn_text, font=("Helvetica", 12)).pack(pady=5)
-    
     ttk.Label(detalhes_janela, text="Ano de Publicação: " + str(livro[3]), font=("Helvetica", 12)).pack(pady=5)
     ttk.Label(detalhes_janela, text="Editora: " + livro[4], font=("Helvetica", 12)).pack(pady=5)
+    ttk.Label(detalhes_janela, text="Estoque: " + str(livro[5]), font=("Helvetica", 12)).pack(pady=5)
+
+
+btn_exibir_detalhes = ttk.Button(root, text="Exibir Detalhes", command=exibir_detalhes)
+btn_exibir_detalhes.pack(side=tk.LEFT, padx=5, pady=10)
+
+
 
 
 def remover_livro():
@@ -216,7 +290,46 @@ def remover_livro():
 
     tree.delete(selected_item)
 
+btn_remover_livro = ttk.Button(root, text="Remover Livro", command=remover_livro)
+btn_remover_livro.pack(side=tk.LEFT, padx=5, pady=10)
+
 def adicionar_livro():
+    def adicionar_novo_livro():
+        titulo = titulo_var.get()
+        isbn = isbn_var.get()
+        ano = ano_var.get()
+        editora = editora_var.get()
+        estoque = estoque_var.get()
+
+        if not (titulo and isbn and ano and editora and estoque):
+            messagebox.showwarning("Aviso", "Por favor, preencha todos os campos")
+            return
+
+        try:
+            cursor = mydb.cursor()
+            cursor.execute("SELECT * FROM livros WHERE titulo = %s", (titulo,))
+            existing_book = cursor.fetchone()
+
+            if existing_book:
+                messagebox.showinfo("Aviso", "Este livro já está registrado.")
+            else:
+                sql_insert_book = "INSERT INTO livros (titulo, isbn, ano_publicacao, editora, estoque) VALUES (%s, %s, %s, %s, %s)"
+                val = (titulo, isbn, int(ano), editora, int(estoque))
+                cursor.execute(sql_insert_book, val)
+                mydb.commit()
+                messagebox.showinfo("Sucesso", "Livro adicionado com sucesso.")
+
+                adicionar_janela.destroy()
+                carregar_dados_iniciais()  
+               
+
+        except Error as e:
+            print(f"Erro ao adicionar livro: {e}")
+            messagebox.showerror("Erro", "Ocorreu um erro ao adicionar o livro.")
+
+        finally:
+            cursor.close()
+
     adicionar_janela = tk.Toplevel(root)
     adicionar_janela.title("Adicionar Livro")
 
@@ -224,25 +337,7 @@ def adicionar_livro():
     isbn_var = tk.StringVar(adicionar_janela)
     ano_var = tk.StringVar(adicionar_janela)
     editora_var = tk.StringVar(adicionar_janela)
-
-    def adicionar():
-        titulo = titulo_var.get()
-        isbn = isbn_var.get()
-        ano = ano_var.get()
-        editora = editora_var.get()
-
-        if not (titulo and isbn and ano and editora):
-            messagebox.showwarning("Aviso", "Por favor, preencha todos os campos")
-            return
-
-        sql = "INSERT INTO livros (titulo, isbn, ano_publicacao, editora) VALUES (%s, %s, %s, %s)"
-        val = (titulo, isbn, int(ano), editora)
-        mycursor.execute(sql, val)
-        mydb.commit()
-
-        tree.insert("", "end", text=str(mycursor.lastrowid), values=(mycursor.lastrowid, titulo, "Disponível", ano, editora))
-
-        adicionar_janela.destroy()
+    estoque_var = tk.StringVar(adicionar_janela)
 
     ttk.Label(adicionar_janela, text="Título:").grid(row=0, column=0, padx=5, pady=5)
     ttk.Entry(adicionar_janela, textvariable=titulo_var).grid(row=0, column=1, padx=5, pady=5)
@@ -252,8 +347,16 @@ def adicionar_livro():
     ttk.Entry(adicionar_janela, textvariable=ano_var).grid(row=2, column=1, padx=5, pady=5)
     ttk.Label(adicionar_janela, text="Editora:").grid(row=3, column=0, padx=5, pady=5)
     ttk.Entry(adicionar_janela, textvariable=editora_var).grid(row=3, column=1, padx=5, pady=5)
+    ttk.Label(adicionar_janela, text="Estoque:").grid(row=4, column=0, padx=5, pady=5)
+    ttk.Entry(adicionar_janela, textvariable=estoque_var).grid(row=4, column=1, padx=5, pady=5)
 
-    ttk.Button(adicionar_janela, text="Adicionar", command=adicionar).grid(row=4, columnspan=2, pady=10)
+    ttk.Button(adicionar_janela, text="Adicionar", command=adicionar_novo_livro).grid(row=5, columnspan=2, pady=10)
+
+
+
+btn_adicionar_livro = ttk.Button(root, text="Adicionar Livro", command=adicionar_livro)
+btn_adicionar_livro.pack(side=tk.LEFT, padx=5, pady=10)
+
 
 def editar_livro():
     selected_item = tree.focus()
@@ -261,16 +364,17 @@ def editar_livro():
         messagebox.showwarning("Aviso", "Por favor, selecione um livro para editar.")
         return
 
-    
     item_values = tree.item(selected_item)['values']
-    if len(item_values) < 5:
+    if len(item_values) < 6:  
         messagebox.showerror("Erro", "Os valores do livro selecionado estão incompletos.")
         return
 
     livro_id = int(tree.item(selected_item)['text'])
     livro_titulo = item_values[1]
+    livro_status = item_values[2]
     livro_ano = item_values[3]
     livro_editora = item_values[4]
+    livro_estoque = item_values[5] 
 
     editar_janela = tk.Toplevel(root)
     editar_janela.title("Editar Livro")
@@ -278,18 +382,20 @@ def editar_livro():
     novo_titulo_var = tk.StringVar(editar_janela, value=livro_titulo)
     novo_ano_var = tk.StringVar(editar_janela, value=livro_ano)
     nova_editora_var = tk.StringVar(editar_janela, value=livro_editora)
+    novo_estoque_var = tk.StringVar(editar_janela, value=livro_estoque)  
 
     def aplicar():
         novo_titulo = novo_titulo_var.get()
         novo_ano = novo_ano_var.get()
         nova_editora = nova_editora_var.get()
+        novo_estoque = novo_estoque_var.get()  
 
-        sql = "UPDATE livros SET titulo = %s, ano_publicacao = %s, editora = %s WHERE id = %s"
-        val = (novo_titulo, novo_ano, nova_editora, livro_id)
+        sql = "UPDATE livros SET titulo = %s, ano_publicacao = %s, editora = %s, estoque = %s WHERE id = %s"
+        val = (novo_titulo, novo_ano, nova_editora, novo_estoque, livro_id)  
         mycursor.execute(sql, val)
         mydb.commit()
 
-        tree.item(selected_item, values=(livro_id, novo_titulo, "Disponível", novo_ano, nova_editora))
+        tree.item(selected_item, values=(livro_id, novo_titulo, livro_status, novo_ano, nova_editora, novo_estoque))  
 
         messagebox.showinfo("Sucesso", "Livro editado com sucesso.")
         editar_janela.destroy()
@@ -300,8 +406,15 @@ def editar_livro():
     ttk.Entry(editar_janela, textvariable=novo_ano_var).grid(row=1, column=1, padx=5, pady=5)
     ttk.Label(editar_janela, text="Nova Editora:").grid(row=2, column=0, padx=5, pady=5)
     ttk.Entry(editar_janela, textvariable=nova_editora_var).grid(row=2, column=1, padx=5, pady=5)
+    ttk.Label(editar_janela, text="Novo Estoque:").grid(row=3, column=0, padx=5, pady=5)  
+    ttk.Entry(editar_janela, textvariable=novo_estoque_var).grid(row=3, column=1, padx=5, pady=5)  
 
-    ttk.Button(editar_janela, text="Aplicar", command=aplicar).grid(row=3, columnspan=2, pady=10)
+    ttk.Button(editar_janela, text="Aplicar", command=aplicar).grid(row=4, columnspan=2, pady=10)
+
+
+
+btn_editar_livro = ttk.Button(root, text="Editar Livro", command=editar_livro)
+btn_editar_livro.pack(side=tk.LEFT, padx=5, pady=10)
 
     
 def emprestar_livro(livro_titulo):
@@ -368,7 +481,8 @@ def emprestar_livro(livro_titulo):
         mydb.commit()
 
     ttk.Button(emprestar_janela, text="Realizar Empréstimo", command=realizar_emprestimo).grid(row=4, columnspan=2, pady=10)
-
+btn_emprestar_livro = ttk.Button(root, text="Emprestar Livro", command=emprestar_livro)
+btn_emprestar_livro.pack(side=tk.LEFT, padx=5, pady=10)
 
 
 def devolver_livro():
@@ -404,6 +518,12 @@ def exibir_emprestimos_pendentes():
 
 
     ttk.Label(pendentes_janela, text="Empréstimos Pendentes:", font=("Helvetica", 14, "bold")).pack(pady=5)
+btn_emprestimos_pendentes = ttk.Button(root, text="Empréstimos Pendentes", command=exibir_emprestimos_pendentes)
+
+btn_emprestimos_pendentes.pack(side=tk.LEFT, padx=5, pady=10)
+
+
+
 def connect_to_mysql():
     try:
         conn = mysql.connector.connect(
@@ -418,119 +538,6 @@ def connect_to_mysql():
     except Error as e:
         print(f"Erro ao conectar ao MySQL: {e}")
         
-def adicionar_estoque():
-    adicionar_estoque_janela = tk.Toplevel(root)
-    adicionar_estoque_janela.title("Adicionar Estoque")
-
-    livro_var = tk.StringVar(adicionar_estoque_janela)
-    livro_combobox = ttk.Combobox(adicionar_estoque_janela, textvariable=livro_var, state="readonly")
-    livro_combobox.grid(row=0, column=1, padx=5, pady=5)
-
-    conn = connect_to_mysql()
-    cursor = conn.cursor()
-
-    try:
-        cursor.execute("SELECT id, titulo FROM livros")
-        livros = cursor.fetchall()
-
-        livro_combobox['values'] = [livro[1] for livro in livros]
-
-        livro_id_map = {livro[1]: livro[0] for livro in livros}
-
-    except Error as e:
-        print(f"Erro ao carregar os livros disponíveis: {e}")
-        messagebox.showerror("Erro", "Ocorreu um erro ao carregar os livros disponíveis.")
-
-    finally:
-        cursor.close()
-        conn.close()
-
-    def adicionar():
-        livro_titulo = livro_var.get()
-        livro_id = livro_id_map.get(livro_titulo)
-
-        if livro_id is None:
-            messagebox.showwarning("Aviso", "Por favor, selecione um livro.")
-            return
-
-        quantidade = quantidade_var.get()
-
-        if not quantidade:
-            messagebox.showwarning("Aviso", "Por favor, insira a quantidade.")
-            return
-
-        try:
-            conn = connect_to_mysql()
-            cursor = conn.cursor()
-
-            for item in tree.get_children():
-                if int(tree.item(item)['text']) == livro_id:
-                    if tree.item(item)['values'][2] == "Disponível":
-                        cursor.execute("UPDATE livros SET estoque = estoque + %s WHERE id = %s", (quantidade, livro_id))
-                        conn.commit()
-
-                        messagebox.showinfo("Sucesso", f"{quantidade} unidades adicionadas ao estoque do livro.")
-                        adicionar_estoque_janela.destroy()
-
-                        nova_quantidade = int(tree.item(item)['values'][3]) + quantidade
-                        tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Disponível", nova_quantidade, tree.item(item)['values'][4]))
-                   
-
-        except Error as e:
-            print(f"Erro ao adicionar estoque: {e}")
-            messagebox.showerror("Erro", "Ocorreu um erro ao adicionar o estoque.")
-
-        finally:
-            cursor.close()
-            conn.close()
-
-    def subtrair():
-        livro_titulo = livro_var.get()
-        livro_id = livro_id_map.get(livro_titulo)
-
-        if livro_id is None:
-            messagebox.showwarning("Aviso", "Por favor, selecione um livro.")
-            return
-
-        quantidade = quantidade_var.get()
-
-        if not quantidade:
-            messagebox.showwarning("Aviso", "Por favor, insira a quantidade.")
-            return
-
-        try:
-            conn = connect_to_mysql()
-            cursor = conn.cursor()
-
-            for item in tree.get_children():
-                if int(tree.item(item)['text']) == livro_id:
-                    if tree.item(item)['values'][2] == "Disponível":
-                        cursor.execute("UPDATE livros SET estoque = estoque - %s WHERE id = %s", (quantidade, livro_id))
-                        conn.commit()
-
-                        messagebox.showinfo("Sucesso", f"{quantidade} unidades subtraídas do estoque do livro.")
-                        adicionar_estoque_janela.destroy()
-
-                        nova_quantidade = int(tree.item(item)['values'][3]) - quantidade
-                        tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Disponível", nova_quantidade, tree.item(item)['values'][4]))
-                    
-        except Error as e:
-            print(f"Erro ao subtrair estoque: {e}")
-            messagebox.showerror("Erro", "Ocorreu um erro ao subtrair o estoque.")
-
-        finally:
-            cursor.close()
-            conn.close()
-
-    ttk.Label(adicionar_estoque_janela, text="Livro:").grid(row=0, column=0, padx=5, pady=5)
-    ttk.Label(adicionar_estoque_janela, text="Quantidade a Adicionar/Subtrair:").grid(row=1, column=0, padx=5, pady=5)
-
-    quantidade_var = tk.IntVar(adicionar_estoque_janela)
-    ttk.Entry(adicionar_estoque_janela, textvariable=quantidade_var).grid(row=1, column=1, padx=5, pady=5)
-
-    ttk.Button(adicionar_estoque_janela, text="Adicionar", command=adicionar).grid(row=2, column=0, padx=5, pady=5)
-    ttk.Button(adicionar_estoque_janela, text="Subtrair", command=subtrair).grid(row=2, column=1, padx=5, pady=5)
-
 
 
 
@@ -542,11 +549,7 @@ for item in tree.get_children():
     sql = "SELECT estoque FROM livros WHERE id = %s"
     mycursor.execute(sql, (livro_id,))
     estoque = mycursor.fetchone()[0]
-
     tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Disponível", estoque, tree.item(item)['values'][4]))
-
-btn_adicionar_estoque = ttk.Button(root, text="Adicionar Estoque", command=adicionar_estoque)
-btn_adicionar_estoque.pack(side=tk.LEFT, padx=5, pady=10)
 
 
 
@@ -557,28 +560,11 @@ livros = mycursor.fetchall()
 
 for livro in livros:
     tree.insert("", "end", text=str(livro[0]), values=(livro[0], livro[1], "Disponível", livro[3], livro[4], livro[5]))
+    
+    tree.set(tree.get_children()[-1], "Estoque", livro[5])
 
 
 
-
-btn_exibir_detalhes = ttk.Button(root, text="Exibir Detalhes", command=exibir_detalhes)
-btn_exibir_detalhes.pack(side=tk.LEFT, padx=5, pady=10)
-
-btn_remover_livro = ttk.Button(root, text="Remover Livro", command=remover_livro)
-btn_remover_livro.pack(side=tk.LEFT, padx=5, pady=10)
-
-btn_adicionar_livro = ttk.Button(root, text="Adicionar Livro", command=adicionar_livro)
-btn_adicionar_livro.pack(side=tk.LEFT, padx=5, pady=10)
-
-btn_editar_livro = ttk.Button(root, text="Editar Livro", command=editar_livro)
-btn_editar_livro.pack(side=tk.LEFT, padx=5, pady=10)
-
-btn_emprestar_livro = ttk.Button(root, text="Emprestar Livro", command=emprestar_livro)
-btn_emprestar_livro.pack(side=tk.LEFT, padx=5, pady=10)
-
-btn_emprestimos_pendentes = ttk.Button(root, text="Empréstimos Pendentes", command=exibir_emprestimos_pendentes)
-
-btn_emprestimos_pendentes.pack(side=tk.LEFT, padx=5, pady=10)
 
 
 
