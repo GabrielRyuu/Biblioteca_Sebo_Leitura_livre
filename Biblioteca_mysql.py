@@ -424,7 +424,6 @@ def emprestar_livro(livro_titulo):
         return
 
     livro_id = int(tree.item(selected_item)['text'])
-    
 
     sql = "SELECT * FROM emprestimos WHERE livro_id = %s AND status = 'pendente'"
     mycursor.execute(sql, (livro_id,))
@@ -476,12 +475,23 @@ def emprestar_livro(livro_titulo):
             if tree.item(item)['text'] == str(livro_id):
                 tree.item(item, values=(tree.item(item)['values'][0], livro_titulo, "Emprestado", tree.item(item)['values'][3], tree.item(item)['values'][4]))
 
+        # Atualize o status do livro para 'Emprestado' no banco de dados
         sql_update_status = "UPDATE livros SET status = 'Emprestado' WHERE id = %s"
         mycursor.execute(sql_update_status, (livro_id,))
         mydb.commit()
 
     ttk.Button(emprestar_janela, text="Realizar Empréstimo", command=realizar_emprestimo).grid(row=4, columnspan=2, pady=10)
-btn_emprestar_livro = ttk.Button(root, text="Emprestar Livro", command=emprestar_livro)
+
+def emprestar_livro_selecionado():
+    selected_item = tree.focus()
+    if not selected_item:
+        messagebox.showwarning("Aviso", "Por favor, selecione um livro para emprestar.")
+        return
+
+    livro_titulo = tree.item(selected_item)['values'][1]
+    emprestar_livro(livro_titulo)
+
+btn_emprestar_livro = ttk.Button(root, text="Emprestar Livro", command=emprestar_livro_selecionado)
 btn_emprestar_livro.pack(side=tk.LEFT, padx=5, pady=10)
 
 
@@ -508,21 +518,35 @@ def devolver_livro():
 btn_devolver_livro = ttk.Button(root, text="Devolver Livro", command=devolver_livro)
 btn_devolver_livro.pack(side=tk.LEFT, padx=5, pady=10)  
 
+
 def exibir_emprestimos_pendentes():
     pendentes_janela = tk.Toplevel(root)
     pendentes_janela.title("Empréstimos Pendentes")
 
-    sql = "SELECT * FROM emprestimos WHERE status = 'pendente'"
+    tree_pendentes = ttk.Treeview(pendentes_janela, columns=("ID", "Livro", "Data de Empréstimo", "Data de Devolução", "Pessoa"), show="headings")
+    tree_pendentes.heading("ID", text="ID")
+    tree_pendentes.heading("Livro", text="Livro")
+    tree_pendentes.heading("Data de Empréstimo", text="Data de Empréstimo")
+    tree_pendentes.heading("Data de Devolução", text="Data de Devolução")
+    tree_pendentes.heading("Pessoa", text="Pessoa")
+    tree_pendentes.pack(padx=10, pady=10)
+
+    sql = "SELECT id, livro_id, data_emprestimo, data_devolucao, pessoa_emprestimo FROM emprestimos WHERE status = 'pendente'"
     mycursor.execute(sql)
     emprestimos = mycursor.fetchall()
 
+    for emprestimo in emprestimos:
+        livro_id = emprestimo[1]
+        sql_livro = "SELECT titulo FROM livros WHERE id = %s"
+        mycursor.execute(sql_livro, (livro_id,))
+        livro_titulo = mycursor.fetchone()[0]
+
+        tree_pendentes.insert("", "end", values=(emprestimo[0], livro_titulo, emprestimo[2], emprestimo[3], emprestimo[4]))
 
     ttk.Label(pendentes_janela, text="Empréstimos Pendentes:", font=("Helvetica", 14, "bold")).pack(pady=5)
+
 btn_emprestimos_pendentes = ttk.Button(root, text="Empréstimos Pendentes", command=exibir_emprestimos_pendentes)
-
 btn_emprestimos_pendentes.pack(side=tk.LEFT, padx=5, pady=10)
-
-
 
 def connect_to_mysql():
     try:
@@ -542,14 +566,20 @@ def connect_to_mysql():
 
 
 
-
 for item in tree.get_children():
     livro_id = int(tree.item(item)['text'])
     
-    sql = "SELECT estoque FROM livros WHERE id = %s"
-    mycursor.execute(sql, (livro_id,))
-    estoque = mycursor.fetchone()[0]
-    tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Disponível", estoque, tree.item(item)['values'][4]))
+   
+    sql_check_emprestimos = "SELECT * FROM emprestimos WHERE livro_id = %s AND status = 'pendente'"
+    mycursor.execute(sql_check_emprestimos, (livro_id,))
+    emprestimos_pendentes = mycursor.fetchall()
+    
+    if emprestimos_pendentes:
+       
+        tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Emprestado", tree.item(item)['values'][3], tree.item(item)['values'][4]))
+    else:
+        
+        tree.item(item, values=(livro_id, tree.item(item)['values'][1], "Disponível", tree.item(item)['values'][3], tree.item(item)['values'][4]))
 
 
 
