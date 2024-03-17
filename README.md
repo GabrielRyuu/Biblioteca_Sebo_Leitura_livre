@@ -15,7 +15,7 @@
 
 
 <p>
- DOWNLOAD https://drive.google.com/file/d/1zDRLzqijxpDBU5-p97Jb9-t5V2zWVR0V/view?usp=sharing
+ DOWNLOAD (C/mysql connector) https://drive.google.com/file/d/1zDRLzqijxpDBU5-p97Jb9-t5V2zWVR0V/view?usp=sharing
 </p>
 </br>
 
