@@ -73,6 +73,90 @@ Esse projeto foi desenvolvido com as seguintes Linguagens:
  </a>
 
  </p>
+## 🚀 Como configurar e rodar o projeto
+
+### ✅ Pré-requisitos
+
+- Python 3.10 ou superior instalado
+- MySQL Server 8+ instalado e rodando
+- Um banco de dados chamado `biblioteca` criado
+- Pip (gerenciador de pacotes do Python) funcionando
+
+---
+
+### 📦 Instalar as dependências
+
+Instale o gerenciador de pacotes `pip` se ainda não tiver (caso esteja com problemas, veja instruções [aqui](https://pip.pypa.io/en/stable/installation/)).
+
+Depois, execute:
+
+```bash
+pip install pymysql pillow
+🛠️ Configurar o banco de dados
+Acesse o MySQL via Workbench ou terminal.
+
+Crie o banco de dados (se ainda não existir):
+
+sql
+Copiar
+Editar
+CREATE DATABASE biblioteca;
+Crie as tabelas necessárias (exemplo mínimo):
+
+sql
+Copiar
+Editar
+USE biblioteca;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE livros (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(255),
+    isbn VARCHAR(255),
+    ano_publicacao INT,
+    editora VARCHAR(255),
+    estoque INT,
+    status VARCHAR(50) DEFAULT 'Disponível'
+);
+
+CREATE TABLE emprestimos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    livro_id INT,
+    data_emprestimo DATE,
+    data_devolucao DATE,
+    pessoa_emprestimo VARCHAR(255),
+    status VARCHAR(50),
+    FOREIGN KEY (livro_id) REFERENCES livros(id)
+);
+(Opcional) Crie um usuário com permissões para o sistema:
+
+sql
+Copiar
+Editar
+CREATE USER 'bibliotecario'@'localhost' IDENTIFIED BY 'senha123';
+GRANT ALL PRIVILEGES ON biblioteca.* TO 'bibliotecario'@'localhost';
+FLUSH PRIVILEGES;
+⚙️ Configurar o script Python
+No seu código Python, ajuste a conexão com o banco de dados:
+
+python
+Copiar
+Editar
+import pymysql
+
+conn = pymysql.connect(
+    host="localhost",
+    user="bibliotecario",  # ou 'root'
+    password="senha123",   # ou a senha que você usa
+    database="biblioteca"
+)
+
+
  
 ## 💻 Autor<br>
 <table>
