@@ -5,7 +5,7 @@
 
 <br>
 
-![Resultado parcial do projeto]
+![Resultado do projeto]
 <p>
   Tela de Login
 </p>
