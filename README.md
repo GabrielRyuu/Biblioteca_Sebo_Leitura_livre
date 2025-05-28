@@ -9,7 +9,10 @@
 <p>
   Tela de Login
 </p>
-![{FC58B27A-A258-47A2-AAA8-0E48098700C4}](https://github.com/user-attachments/assets/9d1a1143-8cd3-46ab-82e3-8480b3fa81b6)
+
+![{7ACEC3D9-93DD-474C-AEF1-758E64781BDB}](https://github.com/user-attachments/assets/5802a029-3927-4a49-8c8d-3adf3f849a6d)
+
+
 
 <br>
 <p>
