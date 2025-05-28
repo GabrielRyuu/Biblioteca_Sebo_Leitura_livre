@@ -8,14 +8,13 @@
 ![Resultado parcial do projeto]
 <p>
   Tela de Login
-  ![{81D13810-22A7-49FB-85B3-0EA487FFE447}](https://github.com/user-attachments/assets/272e09ba-1806-40f0-9242-45e74d826169)
 </p>
+![{81D13810-22A7-49FB-85B3-0EA487FFE447}](https://github.com/user-attachments/assets/272e09ba-1806-40f0-9242-45e74d826169)
 <br>
 <p>
   Tela do Programa
-   ![{86DFD728-F977-4FA7-BB06-F786731AD081}](https://github.com/user-attachments/assets/d0f0c4b7-e5c8-4a20-967f-89e8d9383391)
-
 </p>
+![{86DFD728-F977-4FA7-BB06-F786731AD081}](https://github.com/user-attachments/assets/d0f0c4b7-e5c8-4a20-967f-89e8d9383391)
 
 
 
