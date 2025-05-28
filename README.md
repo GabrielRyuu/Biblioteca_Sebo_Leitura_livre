@@ -9,12 +9,14 @@
 <p>
   Tela de Login
 </p>
-![{81D13810-22A7-49FB-85B3-0EA487FFE447}](https://github.com/user-attachments/assets/272e09ba-1806-40f0-9242-45e74d826169)
+
 <br>
 <p>
   Tela do Programa
 </p>
-![{86DFD728-F977-4FA7-BB06-F786731AD081}](https://github.com/user-attachments/assets/d0f0c4b7-e5c8-4a20-967f-89e8d9383391)
+
+![{58DCC9A6-C2A3-47C5-B7FA-A42063AA46E8}](https://github.com/user-attachments/assets/058d25ca-61d7-4401-b1c3-8cfa14314c83)
+
 
 
 
