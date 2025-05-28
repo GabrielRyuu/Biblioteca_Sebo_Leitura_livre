@@ -5,9 +5,18 @@
 
 <br>
 
-![Resultado parcial do projeto](https://cdn.discordapp.com/attachments/873041648395894824/1218376123038044263/Capturar1.PNG?ex=66441530&is=6642c3b0&hm=376f8836ca3f2c8313e04ddc3a64091eb9f405fba5715704605abbdcd8958c7a& )
- ![Resultado parcial do projeto](https://media.discordapp.net/attachments/873041648395894824/1218376123465990245/Capturar2.PNG?ex=66441530&is=6642c3b0&hm=adf9cb1502d8d0aab14d60797bdc2fec5331041f3fa46ceca1d888645a53af87&=&format=webp&quality=lossless&width=870&height=437)
- 
+![Resultado parcial do projeto]
+<p>
+  Tela de Login
+  ![{81D13810-22A7-49FB-85B3-0EA487FFE447}](https://github.com/user-attachments/assets/272e09ba-1806-40f0-9242-45e74d826169)
+</p>
+<br>
+<p>
+  Tela do Programa
+   ![{86DFD728-F977-4FA7-BB06-F786731AD081}](https://github.com/user-attachments/assets/d0f0c4b7-e5c8-4a20-967f-89e8d9383391)
+
+</p>
+
 
 
 
@@ -26,7 +35,6 @@ Desenvolvimento de um sistema de gerenciamento de biblioteca em Python para um s
  
 <a href="https://drive.google.com/drive/folders/1F0SxnvS-rDk1yvdZxfCAr_AvZWgjuUvi?usp=sharing" target="_blank"><img src="https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white" target="_blank"></a>
 
-![{81D13810-22A7-49FB-85B3-0EA487FFE447}](https://github.com/user-attachments/assets/69dc7c36-2a9a-480a-b7d3-517b92fe319c)
 
 
 
