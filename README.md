@@ -1,111 +1,54 @@
+# Sistema de Gerenciamento de Biblioteca
 
-<p align="center">
-  <img alt="Github Language Count" src="https://img.shields.io/github/languages/count/EvanderInacio/Portfolio?color=00FFFB">
-</p>
-
-<br>
-
-![Resultado do projeto]
-<p>
-  Tela de Login
-</p>
-
-![{7ACEC3D9-93DD-474C-AEF1-758E64781BDB}](https://github.com/user-attachments/assets/5802a029-3927-4a49-8c8d-3adf3f849a6d)
-
-
-
-<br>
-<p>
-  Tela do Programa
-</p>
-
-![{58DCC9A6-C2A3-47C5-B7FA-A42063AA46E8}](https://github.com/user-attachments/assets/058d25ca-61d7-4401-b1c3-8cfa14314c83)
-
-
-
-
-
-<p>
- DOWNLOAD (C/mysql connector) https://drive.google.com/file/d/1zDRLzqijxpDBU5-p97Jb9-t5V2zWVR0V/view?usp=sharing
-</p>
-</br>
-
-
+Sistema desktop em Python para controle de acervo de um sebo: cadastro, edição e remoção de livros, empréstimo e devolução, com autenticação de usuário.
 
 <br>
 
-## 📝 Descrição 
+**Tela de login**
 
-Desenvolvimento de um sistema de gerenciamento de biblioteca em Python para um sebo, permitindo operações básicas como adição, remoção, edição, empréstimo e devolução de livros. O projeto inclui uma interface gráfica de usuário utilizando Tkinter, uma criação de usuário e autenticação de login utlizando bcrypt, e armazenamento de dados MySQL. 
- 
-<a href="https://drive.google.com/drive/folders/1F0SxnvS-rDk1yvdZxfCAr_AvZWgjuUvi?usp=sharing" target="_blank"><img src="https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white" target="_blank"></a>
+![Tela de Login](https://github.com/user-attachments/assets/5802a029-3927-4a49-8c8d-3adf3f849a6d)
 
+**Tela principal**
 
+![Tela do Programa](https://github.com/user-attachments/assets/058d25ca-61d7-4401-b1c3-8cfa14314c83)
 
+<br>
 
+## Descrição
 
-## 🚀 Linguagens
+Interface gráfica em Tkinter para operações de acervo — adição, remoção, edição, empréstimo e devolução de livros — com autenticação de usuário via bcrypt e persistência em MySQL.
 
-Esse projeto foi desenvolvido com as seguintes Linguagens:
+## Linguagens e banco
 
-  <a href="https://github.com/GabrielRyuu" target="_blank"><img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white"></a>
-  <a href="https://github.com/GabrielRyuu" target="_blank"><img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white"></a>
-  <a href="https://github.com/GabrielRyuu" target="_blank"><img src="https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white%22_blank%22%3E"></a>
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 
- 
-## 📚 Bibliotecas
+## Bibliotecas
 
-- tkinter: (https://docs.python.org/pt-br/3/library/tkinter.html)
-- mysql.connector: (https://dev.mysql.com/doc/connector-python/en/)
-- Pillow (fork do PIL): (https://pillow.readthedocs.io/en/stable/)
-- datetime: (https://docs.python.org/pt-br/3/library/datetime.html)
-- bcrypt (https://pypi.org/project/bcrypt/)
-- psycopg2 (https://pypi.org/project/psycopg2/)
-- Photoimage (https://www.pythontutorial.net/tkinter/tkinter-photoimage/)
+- [tkinter](https://docs.python.org/pt-br/3/library/tkinter.html) — interface gráfica
+- [mysql-connector-python](https://dev.mysql.com/doc/connector-python/en/) — conexão com o banco
+- [Pillow](https://pillow.readthedocs.io/en/stable/) — manipulação de imagens
+- [bcrypt](https://pypi.org/project/bcrypt/) — hash de senha
+- [datetime](https://docs.python.org/pt-br/3/library/datetime.html) — controle de datas de empréstimo
 
+## Como configurar e rodar
 
-## 🔗 Links
+### Pré-requisitos
 
-<p align="left">
+- Python 3.10 ou superior
+- MySQL Server 8+ rodando
+- pip funcionando
 
- <a href="https://www.linkedin.com/in/gabriel-cortes-teixeira-0b9a4722b/" alt="Linkedin">
-  <img src="https://img.shields.io/badge/-Linkedin-000?style=for-the-badge&logo=Linkedin&logoColor=0A66C2&link=https://www.linkedin.com/in/evander-inacio"/> 
- </a>
-
- </p>
-## 🚀 Como configurar e rodar o projeto
-
-### ✅ Pré-requisitos
-
-- Python 3.10 ou superior instalado
-- MySQL Server 8+ instalado e rodando
-- Um banco de dados chamado `biblioteca` criado
-- Pip (gerenciador de pacotes do Python) funcionando
-
----
-
-### 📦 Instalar as dependências
-
-Instale o gerenciador de pacotes `pip` se ainda não tiver (caso esteja com problemas, veja instruções [aqui](https://pip.pypa.io/en/stable/installation/)).
-
-Depois, execute:
+### Instalar as dependências
 
 ```bash
-pip install pymysql pillow
-🛠️ Configurar o banco de dados
-Acesse o MySQL via Workbench ou terminal.
+pip install mysql-connector-python pillow bcrypt
+```
 
-Crie o banco de dados (se ainda não existir):
+### Configurar o banco de dados
 
-sql
-Copiar
-Editar
+```sql
 CREATE DATABASE biblioteca;
-Crie as tabelas necessárias (exemplo mínimo):
-
-sql
-Copiar
-Editar
 USE biblioteca;
 
 CREATE TABLE users (
@@ -133,45 +76,32 @@ CREATE TABLE emprestimos (
     status VARCHAR(50),
     FOREIGN KEY (livro_id) REFERENCES livros(id)
 );
-(Opcional) Crie um usuário com permissões para o sistema:
+```
 
-sql
-Copiar
-Editar
-CREATE USER 'bibliotecario'@'localhost' IDENTIFIED BY 'senha123';
+(Opcional) Crie um usuário dedicado para a aplicação em vez de usar o root:
+
+```sql
+CREATE USER 'bibliotecario'@'localhost' IDENTIFIED BY 'sua_senha_aqui';
 GRANT ALL PRIVILEGES ON biblioteca.* TO 'bibliotecario'@'localhost';
 FLUSH PRIVILEGES;
-⚙️ Configurar o script Python
-No seu código Python, ajuste a conexão com o banco de dados:
+```
 
-python
-Copiar
-Editar
-import pymysql
+### Configurar a conexão
 
-conn = pymysql.connect(
+Em `database.py` (ou onde a conexão for feita), ajuste com suas credenciais:
+
+```python
+import mysql.connector
+
+conn = mysql.connector.connect(
     host="localhost",
-    user="bibliotecario",  # ou 'root'
-    password="senha123",   # ou a senha que você usa
+    user="bibliotecario",
+    password="sua_senha_aqui",
     database="biblioteca"
 )
+```
 
+---
 
- 
-## 💻 Autor<br>
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/GabrielRyuu">
-        <img src="https://cdn.discordapp.com/attachments/1049167666876776458/1049179325410312292/tdi.png" width="100px;" /><br>
-        <sub>
-          <b>Gabriel Cortes</b>
-        </sub>
-      </a>
-    </td>
-  </tr>
-</table>
-
------
-
-  <h3 align="center"> Developed by <a href="https://www.linkedin.com/in/gabriel-cortes-teixeira-0b9a4722b/">Gabriel Cortes</a> ☕</h3>
+Desenvolvido por **Gabriel Cortes Teixeira**.
+[LinkedIn](https://www.linkedin.com/in/gabriel-cortes-teixeira-0b9a4722b/)
