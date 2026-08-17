@@ -16,7 +16,7 @@ Sistema desktop em Python para controle de acervo de um sebo: cadastro, edição
 
 ## Descrição
 
-Interface gráfica em Tkinter para operações de acervo — adição, remoção, edição, empréstimo e devolução de livros — com autenticação de usuário via bcrypt e persistência em MySQL.
+Interface gráfica em Tkinter para operações de acervo: adição, remoção, edição, empréstimo e devolução de livros — com autenticação de usuário via bcrypt e persistência em MySQL.
 
 ## Linguagens e banco
 
